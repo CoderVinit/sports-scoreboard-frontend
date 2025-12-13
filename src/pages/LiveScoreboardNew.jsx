@@ -1,4 +1,4 @@
-import { Container, Box, Grid, Paper, Typography, Chip, Divider, LinearProgress, CircularProgress } from '@mui/material';
+import { Container, Box, Grid, Paper, Typography, Chip, Divider, LinearProgress, CircularProgress, Avatar } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import LiveTvIcon from '@mui/icons-material/LiveTv';
@@ -7,6 +7,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { matchService, inningsService } from '../api/services';
+import { getSocket } from '../utils/socket';
 import { keyframes } from '@mui/system';
 
 const pulse = keyframes`
@@ -41,9 +42,22 @@ const LiveScoreboard = () => {
     };
 
     fetchLiveMatches();
-    // Refresh every 10 seconds to show live updates
-    const interval = setInterval(fetchLiveMatches, 10000);
-    return () => clearInterval(interval);
+
+    // Socket.IO real-time updates
+    const socket = getSocket();
+    
+    socket.on('ballRecorded', (data) => {
+      console.log('Ball recorded - refreshing live scoreboard');
+      fetchLiveMatches();
+    });
+
+    // Also keep polling as fallback
+    const interval = setInterval(fetchLiveMatches, 30000); // Increased to 30s since socket provides real-time updates
+    
+    return () => {
+      socket.off('ballRecorded');
+      clearInterval(interval);
+    };
   }, []);
 
   const getRunRate = (runs, overs) => {
@@ -215,9 +229,13 @@ const LiveScoreboard = () => {
                   <Box sx={{ mb: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Typography variant="h4" sx={{ fontSize: '2rem' }}>
-                          🏏
-                        </Typography>
+                        <Avatar 
+                          src={match.team1?.logo} 
+                          alt={match.team1?.name}
+                          sx={{ width: 48, height: 48 }}
+                        >
+                          {match.team1?.shortName?.charAt(0) || '🏏'}
+                        </Avatar>
                         <Box>
                           <Typography variant="h6" fontWeight="bold" sx={{ lineHeight: 1.2 }}>
                             {match.team1?.shortName || match.team1?.name || 'Team 1'}
@@ -245,9 +263,13 @@ const LiveScoreboard = () => {
                   <Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Typography variant="h4" sx={{ fontSize: '2rem' }}>
-                          🏏
-                        </Typography>
+                        <Avatar 
+                          src={match.team2?.logo} 
+                          alt={match.team2?.name}
+                          sx={{ width: 48, height: 48 }}
+                        >
+                          {match.team2?.shortName?.charAt(0) || '🏏'}
+                        </Avatar>
                         <Box>
                           <Typography variant="h6" fontWeight="bold" sx={{ lineHeight: 1.2 }}>
                             {match.team2?.shortName || match.team2?.name || 'Team 2'}
