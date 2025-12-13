@@ -12,6 +12,8 @@ const AdminTeams = () => {
   const dispatch = useDispatch();
   const { teams } = useSelector((state) => state.teams);
   const [openDialog, setOpenDialog] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState(null);
   const [newTeam, setNewTeam] = useState({
     name: '',
     shortName: '',
@@ -27,6 +29,51 @@ const AdminTeams = () => {
     setOpenDialog(false);
     setNewTeam({ name: '', shortName: '', logo: '' });
     dispatch(fetchTeams());
+  };
+
+  const handleEditTeam = (team) => {
+    setSelectedTeam(team);
+    setNewTeam({
+      name: team.name,
+      shortName: team.shortName,
+      logo: team.logo || ''
+    });
+    setEditMode(true);
+    setOpenDialog(true);
+  };
+
+  const handleUpdateTeam = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/teams/${selectedTeam.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newTeam),
+      });
+
+      if (response.ok) {
+        dispatch(fetchTeams());
+        handleCloseDialog();
+      }
+    } catch (error) {
+      console.error('Error updating team:', error);
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setEditMode(false);
+    setSelectedTeam(null);
+    setNewTeam({ name: '', shortName: '', logo: '' });
+  };
+
+  const handleSubmit = () => {
+    if (editMode) {
+      handleUpdateTeam();
+    } else {
+      handleCreateTeam();
+    }
   };
 
   return (
@@ -67,7 +114,11 @@ const AdminTeams = () => {
                   <TableCell>{team.shortName}</TableCell>
                   <TableCell>{team.playerCount || 0}</TableCell>
                   <TableCell align="center">
-                    <Button variant="outlined" size="small">
+                    <Button 
+                      variant="outlined" 
+                      size="small"
+                      onClick={() => handleEditTeam(team)}
+                    >
                       Edit
                     </Button>
                   </TableCell>
@@ -84,8 +135,8 @@ const AdminTeams = () => {
         </Table>
       </TableContainer>
 
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Add New Team</DialogTitle>
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>{editMode ? 'Edit Team' : 'Add New Team'}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12}>
@@ -115,9 +166,9 @@ const AdminTeams = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button onClick={handleCreateTeam} variant="contained">
-            Add Team
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleSubmit} variant="contained">
+            {editMode ? 'Update Team' : 'Add Team'}
           </Button>
         </DialogActions>
       </Dialog>

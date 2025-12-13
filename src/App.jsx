@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Container, Box } from '@mui/material';
+import { useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
@@ -13,10 +14,16 @@ import AdminScoreEntryStatic from './pages/admin/AdminScoreEntryStatic';
 import AdminPlayers from './pages/admin/AdminPlayers';
 import AdminTeams from './pages/admin/AdminTeams';
 import { ProtectedRoute, AdminRoute } from './components/ProtectedRoute';
+import { initializeSocket } from './utils/socket';
 import './App.css';
 
 // Cricket Scoreboard Application
 function App() {
+  useEffect(() => {
+    // Initialize socket connection when app loads
+    initializeSocket();
+  }, []);
+
   return (
     <Router>
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
