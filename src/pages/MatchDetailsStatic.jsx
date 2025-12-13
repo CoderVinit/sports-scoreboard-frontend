@@ -222,6 +222,38 @@ const MatchDetails = () => {
   const team1Colors = getTeamColors(match.team1?.name || match.team1?.shortName);
   const team2Colors = getTeamColors(match.team2?.name || match.team2?.shortName);
 
+  // Derive innings information
+  const inningsList = match.innings || [];
+
+  const getTeamById = (teamId) => {
+    if (!teamId) return null;
+    if (teamId === match.team1Id) return match.team1;
+    if (teamId === match.team2Id) return match.team2;
+    return null;
+  };
+
+  const firstInnings = inningsList.find((inn) => inn.inningsNumber === 1) || inningsList[0] || null;
+  const secondInnings = inningsList.find((inn) => inn.inningsNumber === 2) || null;
+
+  const currentInningsNumber = match.currentInnings || (secondInnings ? 2 : 1);
+  const currentInnings =
+    inningsList.find((inn) => inn.inningsNumber === currentInningsNumber) ||
+    secondInnings ||
+    firstInnings;
+
+  const firstInningsBattingTeam = firstInnings
+    ? firstInnings.battingTeam || getTeamById(firstInnings.battingTeamId)
+    : null;
+  const secondInningsBattingTeam = secondInnings
+    ? secondInnings.battingTeam || getTeamById(secondInnings.battingTeamId)
+    : null;
+
+  // Primary innings to display in header (usually current innings)
+  const primaryInnings = currentInnings || firstInnings;
+  const primaryBattingTeam = primaryInnings
+    ? primaryInnings.battingTeam || getTeamById(primaryInnings.battingTeamId)
+    : null;
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Match Header */}
@@ -285,127 +317,56 @@ const MatchDetails = () => {
         </Box>
 
         {/* Score Display */}
-        <Grid container spacing={4}>
-          {/* Team 1 Score */}
-          <Grid item xs={12} md={6}>
-            <Box sx={{ 
-              p: 3.5, 
-              borderRadius: 2, 
-              bgcolor: team1Colors.bgColor,
-              border: `2px solid ${team1Colors.borderColor}`,
-              backdropFilter: 'blur(10px)',
-              background: `linear-gradient(135deg, ${team1Colors.bgColor} 0%, ${hexToRgba(team1Colors.primary, 0.15)} 100%)`,
-              boxShadow: `0 4px 12px ${hexToRgba(team1Colors.primary, 0.25)}`
-            }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2.5 }}>
-                <Avatar 
-                  src={match.team1?.logo} 
-                  alt={match.team1?.shortName || match.team1?.name}
-                  sx={{ 
-                    width: 56, 
-                    height: 56,
-                    bgcolor: team1Colors.primary,
-                    border: `2px solid ${team1Colors.accent || team1Colors.primary}`,
-                    color: 'white',
-                    fontWeight: 700,
-                    fontSize: '1.5rem'
-                  }}
-                >
-                  {(match.team1?.shortName || match.team1?.name || 'T1').charAt(0)}
-                </Avatar>
-                <Box>
-                  <Typography variant="h5" fontWeight={700} sx={{ fontSize: { xs: '1.25rem', md: '1.5rem' }, mb: 0.5, color: 'white' }}>
-                    {match.team1?.shortName || match.team1?.name || 'Team 1'}
-                  </Typography>
-                  {match.innings?.[0] && (
-                    <Chip 
-                      label="Batting" 
-                      size="small"
-                      sx={{
-                        bgcolor: team1Colors.accent || team1Colors.primary,
-                        color: 'white',
-                        fontWeight: 600,
-                        fontSize: '0.75rem',
-                        height: 24,
-                        border: `1px solid ${team1Colors.accent || team1Colors.primary}`
-                      }}
-                    />
-                  )}
-                </Box>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 2, flexWrap: 'wrap' }}>
-                <Typography variant="h3" fontWeight={800} sx={{ fontSize: { xs: '2rem', md: '2.5rem' }, lineHeight: 1, color: 'white' }}>
-                  {match.innings?.[0]?.totalRuns || 0}/{match.innings?.[0]?.totalWickets || 0}
-                </Typography>
-                <Typography variant="h6" sx={{ opacity: 0.95, fontWeight: 500, fontSize: { xs: '1rem', md: '1.125rem' }, color: 'white' }}>
-                  ({match.innings?.[0]?.totalOvers || '0.0'} ov)
+        <Grid container spacing={3}>
+          {/* Primary (current) innings */}
+          <Grid item xs={12} md={8}>
+            <Box sx={{ mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                {primaryBattingTeam?.logo && (
+                  <img
+                    src={primaryBattingTeam.logo}
+                    alt={primaryBattingTeam.shortName || primaryBattingTeam.name}
+                    style={{ maxHeight: 40 }}
+                  />
+                )}
+                <Typography variant="h5" fontWeight="bold">
+                  {primaryBattingTeam?.shortName || primaryBattingTeam?.name || 'Team'}
                 </Typography>
               </Box>
-            </Box>
-          </Grid>
-          
-          {/* Team 2 Score */}
-          <Grid item xs={12} md={6}>
-            <Box sx={{ 
-              p: 3.5, 
-              borderRadius: 2, 
-              bgcolor: team2Colors.bgColor,
-              border: `2px solid ${team2Colors.borderColor}`,
-              backdropFilter: 'blur(10px)',
-              background: `linear-gradient(135deg, ${team2Colors.bgColor} 0%, ${hexToRgba(team2Colors.primary, 0.15)} 100%)`,
-              boxShadow: `0 4px 12px ${hexToRgba(team2Colors.primary, 0.25)}`
-            }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2.5 }}>
-                <Avatar 
-                  src={match.team2?.logo} 
-                  alt={match.team2?.shortName || match.team2?.name}
-                  sx={{ 
-                    width: 56, 
-                    height: 56,
-                    bgcolor: team2Colors.primary,
-                    border: `2px solid ${team2Colors.accent || team2Colors.primary}`,
-                    color: 'white',
-                    fontWeight: 700,
-                    fontSize: '1.5rem'
-                  }}
-                >
-                  {(match.team2?.shortName || match.team2?.name || 'T2').charAt(0)}
-                </Avatar>
-                <Box>
-                  <Typography variant="h5" fontWeight={700} sx={{ fontSize: { xs: '1.25rem', md: '1.5rem' }, mb: 0.5, color: 'white' }}>
-                    {match.team2?.shortName || match.team2?.name || 'Team 2'}
-                  </Typography>
-                  {match.innings?.[1] && (
-                    <Chip 
-                      label="Batting" 
-                      size="small"
-                      sx={{
-                        bgcolor: team2Colors.accent || team2Colors.primary,
-                        color: 'white',
-                        fontWeight: 600,
-                        fontSize: '0.75rem',
-                        height: 24,
-                        border: `1px solid ${team2Colors.accent || team2Colors.primary}`
-                      }}
-                    />
-                  )}
-                </Box>
+              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 2, mt: 1 }}>
+                <Typography variant="h3" fontWeight="bold">
+                  {primaryInnings?.totalRuns ?? 0}/{primaryInnings?.totalWickets ?? 0}
+                </Typography>
+                <Typography variant="h6">
+                  ({primaryInnings?.totalOvers || '0.0'} ov)
+                </Typography>
               </Box>
-              {match.innings?.[1] ? (
-                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 2, flexWrap: 'wrap' }}>
-                  <Typography variant="h3" fontWeight={800} sx={{ fontSize: { xs: '2rem', md: '2.5rem' }, lineHeight: 1, color: 'white' }}>
-                    {match.innings[1].totalRuns}/{match.innings[1].totalWickets}
-                  </Typography>
-                  <Typography variant="h6" sx={{ opacity: 0.95, fontWeight: 500, fontSize: { xs: '1rem', md: '1.125rem' }, color: 'white' }}>
-                    ({match.innings[1].totalOvers} ov)
-                  </Typography>
-                </Box>
-              ) : (
-                <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 600, fontSize: { xs: '1.125rem', md: '1.25rem' }, color: 'white' }}>
-                  Yet to bat
+              {primaryInnings?.target && (
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  Target: {primaryInnings.target}
                 </Typography>
               )}
             </Box>
+          </Grid>
+
+          {/* First innings summary */}
+          <Grid item xs={12} md={4}>
+            {firstInnings && (
+              <Box
+                sx={{
+                  textAlign: { xs: 'left', md: 'right' },
+                  mt: { xs: 2, md: 0 },
+                }}
+              >
+                <Typography variant="subtitle2" sx={{ opacity: 0.9 }}>
+                  1st Innings -{' '}
+                  {firstInningsBattingTeam?.shortName || firstInningsBattingTeam?.name || 'Team'}
+                </Typography>
+                <Typography variant="h6" fontWeight="bold">
+                  {firstInnings.totalRuns || 0}/{firstInnings.totalWickets || 0} ({firstInnings.totalOvers || '0.0'} ov)
+                </Typography>
+              </Box>
+            )}
           </Grid>
         </Grid>
 
@@ -443,9 +404,9 @@ const MatchDetails = () => {
           <Paper elevation={2} sx={{ mb: 3 }}>
             <Box sx={{ bgcolor: 'primary.main', color: 'white', p: 2 }}>
               <Typography variant="h6" fontWeight="bold">
-                {match.innings?.[0]?.battingTeam?.shortName || match.innings?.[0]?.battingTeam?.name || 
-                 (match.innings?.[0]?.battingTeamId === match.team1Id ? (match.team1?.shortName || match.team1?.name) : (match.team2?.shortName || match.team2?.name)) || 
-                 'Team'} Innings - {match.innings?.[0]?.totalRuns || 0}/{match.innings?.[0]?.totalWickets || 0} ({match.innings?.[0]?.totalOvers || '0.0'} ov)
+                {currentInnings?.battingTeam?.shortName || currentInnings?.battingTeam?.name || 
+                 (currentInnings?.battingTeamId === match.team1Id ? (match.team1?.shortName || match.team1?.name) : (match.team2?.shortName || match.team2?.name)) || 
+                 'Team'} Innings - {currentInnings?.totalRuns || 0}/{currentInnings?.totalWickets || 0} ({currentInnings?.totalOvers || '0.0'} ov)
               </Typography>
             </Box>
             
@@ -523,20 +484,41 @@ const MatchDetails = () => {
             {/* Extras & Total */}
             <Box sx={{ p: 2, bgcolor: 'grey.50' }}>
               <Typography variant="body2">
-                <strong>Extras:</strong> {match.innings?.[0]?.extras || 0}
+                <strong>Extras:</strong> {currentInnings?.extras || 0}
               </Typography>
               <Typography variant="h6" sx={{ mt: 1 }}>
-                <strong>Total:</strong> {match.innings?.[0]?.totalRuns || 0}/{match.innings?.[0]?.totalWickets || 0} ({match.innings?.[0]?.totalOvers || '0.0'} ov)
+                <strong>Total:</strong> {currentInnings?.totalRuns || 0}/{currentInnings?.totalWickets || 0} ({currentInnings?.totalOvers || '0.0'} ov)
               </Typography>
             </Box>
           </Paper>
+
+          {/* First Innings Summary Card (when second innings is active) */}
+          {secondInnings && firstInnings && (
+            <Card sx={{ mb: 3 }}>
+              <Box sx={{ p: 2, bgcolor: 'grey.100' }}>
+                <Typography variant="h6" fontWeight="bold">
+                  1st Innings Summary - {firstInningsBattingTeam?.shortName || firstInningsBattingTeam?.name || 'Team'}
+                </Typography>
+              </Box>
+              <Box sx={{ p: 2 }}>
+                <Typography variant="body1">
+                  {firstInnings.totalRuns || 0}/{firstInnings.totalWickets || 0} ({firstInnings.totalOvers || '0.0'} ov)
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  Extras: {firstInnings.extras || 0} • Run Rate: {firstInnings.runRate || '0.00'}
+                </Typography>
+              </Box>
+            </Card>
+          )}
 
           {/* Bowling Scorecard */}
           <Paper elevation={2} sx={{ mb: 3 }}>
             <Box sx={{ bgcolor: 'secondary.main', color: 'white', p: 2 }}>
               <Typography variant="h6" fontWeight="bold">
-                {match.innings?.[0]?.bowlingTeam?.shortName || match.innings?.[0]?.bowlingTeam?.name || 
-                 (match.innings?.[0]?.bowlingTeamId === match.team2Id ? (match.team2?.shortName || match.team2?.name) : (match.team1?.shortName || match.team1?.name)) || 
+                {currentInnings?.bowlingTeam?.shortName || currentInnings?.bowlingTeam?.name ||
+                 (currentInnings?.bowlingTeamId === match.team1Id
+                   ? (match.team1?.shortName || match.team1?.name)
+                   : (match.team2?.shortName || match.team2?.name)) ||
                  'Team'} Bowling
               </Typography>
             </Box>
@@ -697,21 +679,21 @@ const MatchDetails = () => {
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">Runs</Typography>
-                    <Typography variant="h5" fontWeight="bold">{match.innings?.[0]?.totalRuns || 0}</Typography>
+                    <Typography variant="h5" fontWeight="bold">{currentInnings?.totalRuns || 0}</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">Wickets</Typography>
-                    <Typography variant="h5" fontWeight="bold">{match.innings?.[0]?.totalWickets || 0}</Typography>
+                    <Typography variant="h5" fontWeight="bold">{currentInnings?.totalWickets || 0}</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">Run Rate</Typography>
                     <Typography variant="h5" fontWeight="bold">
-                      {match.innings?.[0]?.runRate || '0.00'}
+                      {currentInnings?.runRate || '0.00'}
                     </Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">Extras</Typography>
-                    <Typography variant="h5" fontWeight="bold">{match.innings?.[0]?.extras || 0}</Typography>
+                    <Typography variant="h5" fontWeight="bold">{currentInnings?.extras || 0}</Typography>
                   </Grid>
                 </Grid>
               </Box>
@@ -730,7 +712,7 @@ const MatchDetails = () => {
                   const totalFours = statistics?.battingStats?.reduce((sum, stat) => sum + (stat.fours || 0), 0) || 0;
                   const totalSixes = statistics?.battingStats?.reduce((sum, stat) => sum + (stat.sixes || 0), 0) || 0;
                   const boundaryRuns = (totalFours * 4) + (totalSixes * 6);
-                  const totalRuns = match.innings?.[0]?.totalRuns || 0;
+                  const totalRuns = currentInnings?.totalRuns || 0;
                   const boundaryPercentage = totalRuns > 0 ? ((boundaryRuns / totalRuns) * 100).toFixed(0) : 0;
 
                   // Calculate total balls faced
