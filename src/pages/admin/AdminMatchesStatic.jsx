@@ -15,6 +15,8 @@ const AdminMatchesStatic = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [newMatch, setNewMatch] = useState({
@@ -52,43 +54,111 @@ const AdminMatchesStatic = () => {
   
   const navigate = useNavigate();
 
+  const handleEditMatch = (match) => {
+    setSelectedMatch(match);
+    setEditMode(true);
+    setNewMatch({
+      team1Id: match.team1Id || match.team1?.id || '',
+      team2Id: match.team2Id || match.team2?.id || '',
+      matchFormat: match.matchFormat || 'T20',
+      totalOvers: match.totalOvers || 20,
+      venue: match.venue || '',
+      city: match.city || '',
+      matchDate: new Date(match.matchDate).toISOString().slice(0, 16),
+      series: match.series || 'Team Horizon Premier League',
+      tossWinnerId: match.tossWinnerId || '',
+      tossDecision: match.tossDecision || 'bat',
+    });
+    setOpenDialog(true);
+  };
+
+  const handleUpdateMatch = async () => {
+    try {
+      setSubmitting(true);
+      const matchData = {
+        ...newMatch,
+        matchDate: new Date(newMatch.matchDate).toISOString(),
+        // Convert empty strings to null for toss fields
+        tossWinnerId: newMatch.tossWinnerId || null,
+        tossDecision: newMatch.tossDecision || null,
+      };
+      
+      // Add batting first ID if both toss winner and decision are selected
+      if (newMatch.tossWinnerId && newMatch.tossDecision) {
+        matchData.battingFirstId = newMatch.tossDecision === 'bat' ? newMatch.tossWinnerId : 
+                          (newMatch.tossWinnerId === newMatch.team1Id ? newMatch.team2Id : newMatch.team1Id);
+      }
+      
+      await matchService.updateMatch(selectedMatch.id, matchData);
+      setSnackbar({ open: true, message: 'Match updated successfully!', severity: 'success' });
+      handleCloseDialog();
+      
+      // Refresh matches
+      const response = await matchService.getAllMatches();
+      setMatches(response.data || response.matches || []);
+    } catch (error) {
+      console.error('Error updating match:', error);
+      setSnackbar({ open: true, message: 'Failed to update match', severity: 'error' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleCreateMatch = async () => {
     try {
       setSubmitting(true);
       const matchData = {
         ...newMatch,
         matchDate: new Date(newMatch.matchDate).toISOString(),
-        battingFirstId: newMatch.tossDecision === 'bat' ? newMatch.tossWinnerId : 
-                        (newMatch.tossWinnerId === newMatch.team1Id ? newMatch.team2Id : newMatch.team1Id),
-        status: 'scheduled'
+        // Convert empty strings to null for toss fields
+        tossWinnerId: newMatch.tossWinnerId || null,
+        tossDecision: newMatch.tossDecision || null,
       };
+      
+      // Add batting first ID if both toss winner and decision are selected
+      if (newMatch.tossWinnerId && newMatch.tossDecision) {
+        matchData.battingFirstId = newMatch.tossDecision === 'bat' ? newMatch.tossWinnerId : 
+                          (newMatch.tossWinnerId === newMatch.team1Id ? newMatch.team2Id : newMatch.team1Id);
+      }
       
       await matchService.createMatch(matchData);
       setSnackbar({ open: true, message: 'Match created successfully!', severity: 'success' });
-      setOpenDialog(false);
+      handleCloseDialog();
       
       // Refresh matches
       const response = await matchService.getAllMatches();
       setMatches(response.data || response.matches || []);
-      
-      // Reset form
-      setNewMatch({
-        team1Id: '',
-        team2Id: '',
-        matchFormat: 'T20',
-        totalOvers: 20,
-        venue: '',
-        city: '',
-        matchDate: new Date().toISOString().slice(0, 16),
-        series: 'Team Horizon Premier League',
-        tossWinnerId: '',
-        tossDecision: 'bat',
-      });
     } catch (error) {
       console.error('Error creating match:', error);
       setSnackbar({ open: true, message: 'Failed to create match', severity: 'error' });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setEditMode(false);
+    setSelectedMatch(null);
+    setNewMatch({
+      team1Id: '',
+      team2Id: '',
+      matchFormat: 'T20',
+      totalOvers: 20,
+      venue: '',
+      city: '',
+      matchDate: new Date().toISOString().slice(0, 16),
+      series: 'Team Horizon Premier League',
+      tossWinnerId: '',
+      tossDecision: 'bat',
+    });
+  };
+
+  const handleSubmit = () => {
+    if (editMode) {
+      handleUpdateMatch();
+    } else {
+      handleCreateMatch();
     }
   };
 
@@ -225,10 +295,11 @@ const AdminMatchesStatic = () => {
               <TextField
                 select
                 fullWidth
-                label="Toss Winner"
+                label="Toss Winner (Optional)"
                 value={newMatch.tossWinnerId}
                 onChange={(e) => setNewMatch({ ...newMatch, tossWinnerId: e.target.value })}
               >
+                <MenuItem value="">None (Not selected)</MenuItem>
                 {teams.filter(t => t.id === newMatch.team1Id || t.id === newMatch.team2Id).map((team) => (
                   <MenuItem key={team.id} value={team.id}>
                     {team.name}
@@ -240,10 +311,12 @@ const AdminMatchesStatic = () => {
               <TextField
                 select
                 fullWidth
-                label="Toss Decision"
+                label="Toss Decision (Optional)"
                 value={newMatch.tossDecision}
                 onChange={(e) => setNewMatch({ ...newMatch, tossDecision: e.target.value })}
+                disabled={!newMatch.tossWinnerId}
               >
+                <MenuItem value="">None</MenuItem>
                 <MenuItem value="bat">Bat</MenuItem>
                 <MenuItem value="bowl">Bowl</MenuItem>
               </TextField>
@@ -251,13 +324,13 @@ const AdminMatchesStatic = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
           <Button 
-            onClick={handleCreateMatch} 
+            onClick={handleSubmit} 
             variant="contained" 
             disabled={submitting || !newMatch.team1Id || !newMatch.team2Id || !newMatch.venue || !newMatch.matchDate}
           >
-            {submitting ? 'Creating...' : 'Create Match'}
+            {submitting ? (editMode ? 'Updating...' : 'Creating...') : (editMode ? 'Update Match' : 'Create Match')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -315,7 +388,7 @@ const AdminMatchesStatic = () => {
                     size="small"
                     variant="outlined"
                     startIcon={<EditIcon />}
-                    onClick={() => alert('Edit match feature (static demo)')}
+                    onClick={() => handleEditMatch(match)}
                     sx={{ mr: 1 }}
                   >
                     Edit

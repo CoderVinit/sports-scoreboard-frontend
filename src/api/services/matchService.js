@@ -49,6 +49,12 @@ const matchService = {
     return response.data;
   },
 
+  // Update match (admin)
+  updateMatch: async (matchId, matchData) => {
+    const response = await apiClient.put(`/matches/${matchId}`, matchData);
+    return response.data;
+  },
+
   // Update match status (admin)
   updateMatchStatus: async (matchId, status) => {
     const response = await apiClient.put(`/matches/${matchId}`, { status });
