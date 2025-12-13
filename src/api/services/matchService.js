@@ -19,6 +19,12 @@ const matchService = {
     return response.data;
   },
 
+  // Get completed matches
+  getCompletedMatches: async () => {
+    const response = await apiClient.get('/matches/completed');
+    return response.data;
+  },
+
   // Get match details
   getMatchDetails: async (matchId) => {
     const response = await apiClient.get(`/matches/${matchId}`);

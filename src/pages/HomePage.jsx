@@ -15,6 +15,7 @@ import { getSocket } from '../utils/socket';
 const HomePage = () => {
   const [liveMatches, setLiveMatches] = useState([]);
   const [upcomingMatches, setUpcomingMatches] = useState([]);
+  const [completedMatches, setCompletedMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -22,12 +23,14 @@ const HomePage = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [liveData, upcomingData] = await Promise.all([
+        const [liveData, upcomingData, completedData] = await Promise.all([
           matchService.getLiveMatches(),
-          matchService.getUpcomingMatches()
+          matchService.getUpcomingMatches(),
+          matchService.getCompletedMatches()
         ]);
         setLiveMatches(liveData.data || liveData.matches || []);
         setUpcomingMatches(upcomingData.data || upcomingData.matches || []);
+        setCompletedMatches(completedData.data || completedData.matches || []);
       } catch (err) {
         console.error('Error fetching matches:', err);
         setError(err.message || 'Failed to load matches');
@@ -140,16 +143,58 @@ const HomePage = () => {
           </Box>
           <Grid container spacing={4}>
             {liveMatches.map((match) => {
-              const currentInnings = match.innings?.[0]?.battingTeamId === match.team1Id ? match.innings[0] : match.innings?.[1];
+              const inningsList = match.innings || [];
+              const firstInnings = inningsList.find((inn) => inn.inningsNumber === 1) || inningsList[0] || null;
+              const secondInnings = inningsList.find((inn) => inn.inningsNumber === 2) || (inningsList.length > 1 ? inningsList[1] : null);
+              // Current innings: prefer innings in progress, then match.currentInnings, then latest
+              const currentInnings =
+                inningsList.find((inn) => inn.status === 'in_progress') ||
+                inningsList.find((inn) => inn.inningsNumber === match.currentInnings) ||
+                inningsList[inningsList.length - 1] ||
+                inningsList[0] ||
+                null;
               const totalOvers = match.totalOvers || (match.matchFormat === 'T20' ? 20 : match.matchFormat === 'ODI' ? 50 : 90);
               const progress = currentInnings ? (parseFloat(currentInnings.totalOvers || 0) / totalOvers) * 100 : 0;
               
-              // Determine which team is batting first
-              const isTeam1Batting = match.innings?.[0]?.battingTeamId === match.team1Id;
+              // Determine current batting and bowling teams based on current innings
+              const isTeam1Batting = currentInnings?.battingTeamId === match.team1Id;
               const battingTeam = isTeam1Batting ? match.team1 : match.team2;
               const bowlingTeam = isTeam1Batting ? match.team2 : match.team1;
-              const battingScore = match.innings?.[0] || { totalRuns: 0, totalWickets: 0 };
-              const bowlingScore = match.innings?.[1] || { totalRuns: 0, totalWickets: 0 };
+              const battingScore = currentInnings || { totalRuns: 0, totalWickets: 0 };
+              const bowlingScore = inningsList.find((inn) => inn.id !== currentInnings?.id) || { totalRuns: 0, totalWickets: 0 };
+
+              // Determine if effectively completed (second innings finished) and build result text
+              const isCompletedByInnings = !!(firstInnings && secondInnings && secondInnings.status === 'completed');
+              const winnerTeam =
+                match.winnerId === match.team1Id
+                  ? match.team1
+                  : match.winnerId === match.team2Id
+                  ? match.team2
+                  : null;
+
+              let resultText = '';
+              if (isCompletedByInnings) {
+                if (winnerTeam && match.winMargin) {
+                  resultText = `${winnerTeam.shortName || winnerTeam.name} won by ${match.winMargin}`;
+                } else {
+                  const firstRuns = firstInnings?.totalRuns || 0;
+                  const secondRuns = secondInnings?.totalRuns || 0;
+                  const target = secondInnings?.target || (firstRuns + 1);
+
+                  if (secondRuns >= target) {
+                    const wicketsRemaining = 10 - (secondInnings?.totalWickets || 0);
+                    const chasingTeam = secondInnings.battingTeamId === match.team1Id ? match.team1 : match.team2;
+                    const wk = wicketsRemaining > 0 ? wicketsRemaining : 1;
+                    resultText = `${chasingTeam.shortName || chasingTeam.name} won by ${wk} wicket${wk === 1 ? '' : 's'}`;
+                  } else if (firstRuns > secondRuns) {
+                    const margin = firstRuns - secondRuns;
+                    const defendingTeam = firstInnings.battingTeamId === match.team1Id ? match.team1 : match.team2;
+                    resultText = `${defendingTeam.shortName || defendingTeam.name} won by ${margin} run${margin === 1 ? '' : 's'}`;
+                  } else if (firstRuns === secondRuns) {
+                    resultText = 'Match tied';
+                  }
+                }
+              }
               
               return (
                 <Grid item xs={12} lg={6} key={match.id}>
@@ -302,7 +347,7 @@ const HomePage = () => {
                         </Box>
                       </Box>
                       
-                      {currentInnings && (
+                      {!isCompletedByInnings && currentInnings && (
                         <Box sx={{ mb: 2.5 }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
                             <Typography variant="body2" color="text.secondary" fontWeight={600} fontSize="0.9375rem">
@@ -329,16 +374,22 @@ const HomePage = () => {
                       )}
                       
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2, mt: 3 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                          <TrendingUpIcon sx={{ fontSize: 20, color: '#4caf50' }} />
-                          <Typography variant="body2" color="text.secondary" fontSize="0.9375rem" fontWeight={500}>
-                            CRR: <strong style={{ color: '#1976d2', fontWeight: 700 }}>{currentInnings ? (currentInnings.totalRuns / parseFloat(currentInnings.totalOvers || 1)).toFixed(2) : '0.00'}</strong>
+                        {isCompletedByInnings && resultText ? (
+                          <Typography variant="body2" color="text.secondary" fontSize="0.9375rem" fontWeight={600}>
+                            Result: <strong style={{ color: '#1976d2', fontWeight: 700 }}>{resultText}</strong>
                           </Typography>
-                        </Box>
+                        ) : (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                            <TrendingUpIcon sx={{ fontSize: 20, color: '#4caf50' }} />
+                            <Typography variant="body2" color="text.secondary" fontSize="0.9375rem" fontWeight={500}>
+                              CRR: <strong style={{ color: '#1976d2', fontWeight: 700 }}>{currentInnings ? (currentInnings.totalRuns / parseFloat(currentInnings.totalOvers || 1)).toFixed(2) : '0.00'}</strong>
+                            </Typography>
+                          </Box>
+                        )}
                         <Chip 
-                          label="In Progress" 
+                          label={isCompletedByInnings ? 'Completed' : 'In Progress'} 
                           size="small" 
-                          color="success" 
+                          color={isCompletedByInnings ? 'default' : 'success'} 
                           sx={{ height: 26, fontWeight: 600, fontSize: '0.8125rem' }}
                         />
                       </Box>
@@ -556,6 +607,126 @@ const HomePage = () => {
           ))}
         </Grid>
       </Box>
+
+      {completedMatches && completedMatches.length > 0 && (
+        <Box sx={{ mt: 5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <TrendingUpIcon sx={{ color: '#757575', mr: 1.5, fontSize: 28 }} />
+            <Typography 
+              variant="h5" 
+              fontWeight={700}
+              sx={{
+                fontSize: { xs: '1.5rem', md: '1.75rem' },
+                color: 'text.primary',
+                letterSpacing: '-0.01em'
+              }}
+            >
+              Completed Matches
+            </Typography>
+          </Box>
+          <Grid container spacing={3}>
+            {completedMatches.slice(0, 6).map((match) => {
+              const inningsList = match.innings || [];
+              const firstInnings = inningsList.find((inn) => inn.inningsNumber === 1) || inningsList[0] || null;
+              const secondInnings = inningsList.find((inn) => inn.inningsNumber === 2) || (inningsList.length > 1 ? inningsList[1] : null);
+
+              const totalOvers = match.totalOvers || (match.matchFormat === 'T20' ? 20 : match.matchFormat === 'ODI' ? 50 : 90);
+
+              const winnerTeam =
+                match.winnerId === match.team1Id
+                  ? match.team1
+                  : match.winnerId === match.team2Id
+                  ? match.team2
+                  : null;
+
+              let resultText = '';
+              if (winnerTeam && match.winMargin) {
+                resultText = `${winnerTeam.shortName || winnerTeam.name} won by ${match.winMargin}`;
+              } else if (firstInnings && secondInnings) {
+                const firstRuns = firstInnings.totalRuns || 0;
+                const secondRuns = secondInnings.totalRuns || 0;
+                const target = secondInnings.target || (firstRuns + 1);
+
+                if (secondRuns >= target) {
+                  const wicketsRemaining = 10 - (secondInnings.totalWickets || 0);
+                  const chasingTeam = secondInnings.battingTeamId === match.team1Id ? match.team1 : match.team2;
+                  const wk = wicketsRemaining > 0 ? wicketsRemaining : 1;
+                  resultText = `${chasingTeam.shortName || chasingTeam.name} won by ${wk} wicket${wk === 1 ? '' : 's'}`;
+                } else if (firstRuns > secondRuns) {
+                  const margin = firstRuns - secondRuns;
+                  const defendingTeam = firstInnings.battingTeamId === match.team1Id ? match.team1 : match.team2;
+                  resultText = `${defendingTeam.shortName || defendingTeam.name} won by ${margin} run${margin === 1 ? '' : 's'}`;
+                } else if (firstRuns === secondRuns) {
+                  resultText = 'Match tied';
+                }
+              }
+
+              return (
+                <Grid item xs={12} sm={6} md={4} key={match.id}>
+                  <Card
+                    component={Link}
+                    to={`/match/${match.id}`}
+                    elevation={0}
+                    sx={{
+                      borderRadius: 2,
+                      background: 'white',
+                      border: '1px solid #e0e0e0',
+                      textDecoration: 'none',
+                      cursor: 'pointer',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                        borderColor: '#1976d2',
+                        transform: 'translateY(-2px)'
+                      }
+                    }}
+                  >
+                    <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                        <Chip 
+                          label={match.matchFormat || match.matchType}
+                          size="small"
+                          color="primary"
+                          sx={{ fontWeight: 600, fontSize: '0.75rem', height: 26 }}
+                        />
+                        <Chip 
+                          label="Completed"
+                          size="small"
+                          color="default"
+                          sx={{ fontWeight: 600, fontSize: '0.75rem', height: 26 }}
+                        />
+                      </Box>
+
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        {match.team1?.shortName || match.team1?.name} vs {match.team2?.shortName || match.team2?.name}
+                      </Typography>
+                      {firstInnings && (
+                        <Typography variant="h6" fontWeight={700} sx={{ mb: 0.5 }}>
+                          {firstInnings.totalRuns || 0}/{firstInnings.totalWickets || 0} ({firstInnings.totalOvers || '0.0'}/{totalOvers} ov)
+                        </Typography>
+                      )}
+                      {secondInnings && (
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          2nd innings: {secondInnings.totalRuns || 0}/{secondInnings.totalWickets || 0} ({secondInnings.totalOvers || '0.0'} ov)
+                        </Typography>
+                      )}
+
+                      {resultText && (
+                        <Typography variant="body2" sx={{ mt: 1 }} fontWeight={600}>
+                          Result: <span style={{ color: '#1976d2' }}>{resultText}</span>
+                        </Typography>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Box>
+      )}
       </Box>
     </Box>
   );

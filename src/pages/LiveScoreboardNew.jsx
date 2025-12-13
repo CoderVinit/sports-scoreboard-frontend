@@ -157,15 +157,58 @@ const LiveScoreboard = () => {
       <Grid container spacing={3}>
         {liveMatches && liveMatches.map((match) => {
           const totalOvers = match.totalOvers || (match.matchFormat === 'T20' ? 20 : match.matchFormat === 'ODI' ? 50 : 90);
-          const currentOvers = parseFloat(match.innings?.[0]?.totalOvers || 0);
+          const inningsList = match.innings || [];
+          const currentInnings =
+            inningsList.find((inn) => inn.status === 'in_progress') ||
+            inningsList.find((inn) => inn.inningsNumber === match.currentInnings) ||
+            inningsList[inningsList.length - 1] ||
+            inningsList[0] ||
+            null;
+
+          const currentOvers = parseFloat(currentInnings?.totalOvers || 0);
           const progress = getProgressPercentage(currentOvers, totalOvers);
-          const isTeam1Batting = match.innings?.[0]?.battingTeamId === match.team1Id;
+          const isTeam1Batting = currentInnings?.battingTeamId === match.team1Id;
           
-          // Determine batting and bowling teams
+          // Determine batting and bowling teams for current innings
           const battingTeam = isTeam1Batting ? match.team1 : match.team2;
           const bowlingTeam = isTeam1Batting ? match.team2 : match.team1;
-          const battingScore = match.innings?.[0] || { totalRuns: 0, totalWickets: 0, totalOvers: '0.0' };
-          const bowlingScore = match.innings?.[1] || { totalRuns: 0, totalWickets: 0 };
+          const battingScore = currentInnings || { totalRuns: 0, totalWickets: 0, totalOvers: '0.0' };
+          const bowlingScore = inningsList.find((inn) => inn.id !== currentInnings?.id) || { totalRuns: 0, totalWickets: 0 };
+
+          const firstInnings = inningsList.find((inn) => inn.inningsNumber === 1) || inningsList[0] || null;
+          const secondInnings = inningsList.find((inn) => inn.inningsNumber === 2) || (inningsList.length > 1 ? inningsList[1] : null);
+
+          const isCompletedByInnings = !!(firstInnings && secondInnings && secondInnings.status === 'completed');
+          const winnerTeam =
+            match.winnerId === match.team1Id
+              ? match.team1
+              : match.winnerId === match.team2Id
+              ? match.team2
+              : null;
+
+          let resultText = '';
+          if (isCompletedByInnings) {
+            if (winnerTeam && match.winMargin) {
+              resultText = `${winnerTeam.shortName || winnerTeam.name} won by ${match.winMargin}`;
+            } else {
+              const firstRuns = firstInnings?.totalRuns || 0;
+              const secondRuns = secondInnings?.totalRuns || 0;
+              const target = secondInnings?.target || (firstRuns + 1);
+
+              if (secondRuns >= target) {
+                const wicketsRemaining = 10 - (secondInnings?.totalWickets || 0);
+                const chasingTeam = secondInnings.battingTeamId === match.team1Id ? match.team1 : match.team2;
+                const wk = wicketsRemaining > 0 ? wicketsRemaining : 1;
+                resultText = `${chasingTeam.shortName || chasingTeam.name} won by ${wk} wicket${wk === 1 ? '' : 's'}`;
+              } else if (firstRuns > secondRuns) {
+                const margin = firstRuns - secondRuns;
+                const defendingTeam = firstInnings.battingTeamId === match.team1Id ? match.team1 : match.team2;
+                resultText = `${defendingTeam.shortName || defendingTeam.name} won by ${margin} run${margin === 1 ? '' : 's'}`;
+              } else if (firstRuns === secondRuns) {
+                resultText = 'Match tied';
+              }
+            }
+          }
           
           return (
             <Grid item xs={12} md={6} key={match.id}>
@@ -392,29 +435,31 @@ const LiveScoreboard = () => {
                   bgcolor: '#fafafa',
                   borderTop: '1px solid #e0e0e0'
                 }}>
-                  <Box sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                      <Typography variant="body2" color="text.secondary" fontWeight={600} fontSize="0.875rem">
-                        Match Progress
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" fontSize="0.875rem" fontWeight={500}>
-                        {currentOvers.toFixed(1)}/{totalOvers} overs
-                      </Typography>
+                  {!isCompletedByInnings && (
+                    <Box sx={{ mb: 2 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="body2" color="text.secondary" fontWeight={600} fontSize="0.875rem">
+                          Match Progress
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" fontSize="0.875rem" fontWeight={500}>
+                          {currentOvers.toFixed(1)}/{totalOvers} overs
+                        </Typography>
+                      </Box>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={progress} 
+                        sx={{ 
+                          height: 8, 
+                          borderRadius: 2,
+                          bgcolor: '#e0e0e0',
+                          '& .MuiLinearProgress-bar': {
+                            background: '#1976d2',
+                            borderRadius: 2
+                          }
+                        }} 
+                      />
                     </Box>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={progress} 
-                      sx={{ 
-                        height: 8, 
-                        borderRadius: 2,
-                        bgcolor: '#e0e0e0',
-                        '& .MuiLinearProgress-bar': {
-                          background: '#1976d2',
-                          borderRadius: 2
-                        }
-                      }} 
-                    />
-                  </Box>
+                  )}
                   
                   {/* Match Stats */}
                   <Box sx={{ 
@@ -425,15 +470,23 @@ const LiveScoreboard = () => {
                     gap: 1.5
                   }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <TrendingUpIcon sx={{ fontSize: 18, color: '#4caf50' }} />
-                      <Typography variant="body2" color="text.secondary" fontSize="0.875rem" fontWeight={500}>
-                        CRR: <strong style={{ color: '#1976d2', fontWeight: 700 }}>{getRunRate(battingScore.totalRuns || 0, currentOvers)}</strong>
-                      </Typography>
+                      {isCompletedByInnings && resultText ? (
+                        <Typography variant="body2" color="text.secondary" fontSize="0.875rem" fontWeight={600}>
+                          Result: <strong style={{ color: '#1976d2', fontWeight: 700 }}>{resultText}</strong>
+                        </Typography>
+                      ) : (
+                        <>
+                          <TrendingUpIcon sx={{ fontSize: 18, color: '#4caf50' }} />
+                          <Typography variant="body2" color="text.secondary" fontSize="0.875rem" fontWeight={500}>
+                            CRR: <strong style={{ color: '#1976d2', fontWeight: 700 }}>{getRunRate(battingScore.totalRuns || 0, currentOvers)}</strong>
+                          </Typography>
+                        </>
+                      )}
                     </Box>
                     <Chip 
-                      label="Match in progress" 
+                      label={isCompletedByInnings ? 'Completed' : 'Match in progress'} 
                       size="small" 
-                      color="success" 
+                      color={isCompletedByInnings ? 'default' : 'success'} 
                       sx={{ 
                         height: 24,
                         fontWeight: 600,

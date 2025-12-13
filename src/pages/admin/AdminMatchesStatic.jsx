@@ -163,6 +163,22 @@ const AdminMatchesStatic = () => {
     }
   };
 
+  const handleMarkCompleted = async (match) => {
+    try {
+      setSubmitting(true);
+      await matchService.updateMatch(match.id, { status: 'completed' });
+      setSnackbar({ open: true, message: 'Match marked as completed!', severity: 'success' });
+
+      const response = await matchService.getAllMatches();
+      setMatches(response.data || response.matches || []);
+    } catch (error) {
+      console.error('Error marking match as completed:', error);
+      setSnackbar({ open: true, message: 'Failed to mark match as completed', severity: 'error' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleMatchFormatChange = (format) => {
     const oversMap = {
       'T20': 20,
@@ -409,7 +425,7 @@ const AdminMatchesStatic = () => {
                 <TableCell>
                   <Chip
                     label={match.status}
-                    color={match.status === 'live' ? 'error' : match.status === 'upcoming' ? 'info' : 'default'}
+                    color={match.status === 'live' ? 'error' : match.status === 'completed' ? 'default' : 'info'}
                     size="small"
                   />
                 </TableCell>
@@ -432,6 +448,17 @@ const AdminMatchesStatic = () => {
                       onClick={() => navigate(`/admin/score-entry/${match.id}`)}
                     >
                       Score Entry
+                    </Button>
+                  )}
+                  {match.status === 'live' && (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="success"
+                      onClick={() => handleMarkCompleted(match)}
+                      sx={{ ml: 1 }}
+                    >
+                      Mark Completed
                     </Button>
                   )}
                 </TableCell>
