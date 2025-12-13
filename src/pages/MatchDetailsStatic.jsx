@@ -7,6 +7,7 @@ import {
 import SportsCricketIcon from '@mui/icons-material/SportsCricket';
 import LiveTvIcon from '@mui/icons-material/LiveTv';
 import { matchService } from '../api/services';
+import { getSocket } from '../utils/socket';
 
 const MatchDetails = () => {
   const { matchId } = useParams();
@@ -39,6 +40,21 @@ const MatchDetails = () => {
     };
 
     fetchMatchData();
+
+    // Socket.IO real-time updates
+    const socket = getSocket();
+    
+    socket.on('ballRecorded', (data) => {
+      if (data.matchId === parseInt(matchId)) {
+        console.log('Ball recorded - updating data in real-time');
+        // Refresh all data when a new ball is recorded
+        fetchMatchData();
+      }
+    });
+
+    return () => {
+      socket.off('ballRecorded');
+    };
   }, [matchId]);
 
   if (loading) {

@@ -5,6 +5,7 @@ import { matchService } from '../api/services';
 import SportsCricketIcon from '@mui/icons-material/SportsCricket';
 import LiveTvIcon from '@mui/icons-material/LiveTv';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import { getSocket } from '../utils/socket';
 
 const HomePage = () => {
   const [liveMatches, setLiveMatches] = useState([]);
@@ -31,9 +32,22 @@ const HomePage = () => {
     };
 
     fetchData();
-    // Refresh every 10 seconds to show live updates
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
+
+    // Socket.IO real-time updates
+    const socket = getSocket();
+    
+    socket.on('ballRecorded', (data) => {
+      console.log('Ball recorded - refreshing home page data');
+      fetchData();
+    });
+
+    // Also keep polling as fallback
+    const interval = setInterval(fetchData, 30000); // Increased to 30s since socket provides real-time updates
+    
+    return () => {
+      socket.off('ballRecorded');
+      clearInterval(interval);
+    };
   }, []);
 
   if (loading) {
