@@ -244,6 +244,12 @@ const LiveScoreboard = () => {
           const progress = getProgressPercentage(currentOvers, totalOvers);
           const isTeam1Batting = match.innings?.[0]?.battingTeamId === match.team1Id;
           
+          // Determine batting and bowling teams
+          const battingTeam = isTeam1Batting ? match.team1 : match.team2;
+          const bowlingTeam = isTeam1Batting ? match.team2 : match.team1;
+          const battingScore = match.innings?.[0] || { totalRuns: 0, totalWickets: 0, totalOvers: '0.0' };
+          const bowlingScore = match.innings?.[1] || { totalRuns: 0, totalWickets: 0 };
+          
           return (
             <Grid item xs={12} md={6} key={match.id}>
               <Paper 
@@ -341,7 +347,7 @@ const LiveScoreboard = () => {
 
                 {/* Teams and Scores */}
                 <Box sx={{ p: 3.5 }}>
-                  {/* Team 1 - Batting Team with Gradient */}
+                  {/* Batting Team - Always on top */}
                   <Box sx={{ mb: 3 }}>
                     <Box sx={{ 
                       display: 'flex', 
@@ -350,34 +356,29 @@ const LiveScoreboard = () => {
                       mb: 1.5,
                       p: 3,
                       borderRadius: 3,
-                      background: isTeam1Batting 
-                        ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                        : 'linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)',
-                      border: isTeam1Batting ? 'none' : '1px solid rgba(102, 126, 234, 0.15)',
-                      boxShadow: isTeam1Batting ? '0 8px 24px rgba(102, 126, 234, 0.3)' : 'none',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)',
                       transition: 'all 0.3s ease',
                       '&:hover': {
                         transform: 'scale(1.02)',
-                        boxShadow: isTeam1Batting ? '0 12px 32px rgba(102, 126, 234, 0.4)' : '0 4px 12px rgba(0,0,0,0.1)',
+                        boxShadow: '0 12px 32px rgba(102, 126, 234, 0.4)',
                       }
                     }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
                         <Avatar 
-                          src={match.team1?.logo} 
-                          alt={match.team1?.name}
+                          src={battingTeam?.logo} 
+                          alt={battingTeam?.name}
                           sx={{ 
                             width: 56, 
                             height: 56,
-                            background: isTeam1Batting 
-                              ? 'rgba(255,255,255,0.25)' 
-                              : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            background: 'rgba(255,255,255,0.25)',
                             fontSize: '1.5rem',
                             fontWeight: 800,
-                            border: isTeam1Batting ? '2px solid rgba(255,255,255,0.3)' : 'none',
-                            boxShadow: isTeam1Batting ? '0 4px 12px rgba(0,0,0,0.2)' : '0 4px 12px rgba(102, 126, 234, 0.3)'
+                            border: '2px solid rgba(255,255,255,0.3)',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                           }}
                         >
-                          {match.team1?.shortName?.charAt(0) || match.team1?.name?.charAt(0) || 'T1'}
+                          {battingTeam?.shortName?.charAt(0) || battingTeam?.name?.charAt(0) || 'T'}
                         </Avatar>
                         <Box>
                           <Typography 
@@ -385,27 +386,25 @@ const LiveScoreboard = () => {
                             fontWeight={800} 
                             sx={{ 
                               lineHeight: 1.2,
-                              color: isTeam1Batting ? 'white' : 'text.primary',
+                              color: 'white',
                               mb: 0.5
                             }}
                           >
-                            {match.team1?.shortName || match.team1?.name || 'Team 1'}
+                            {battingTeam?.shortName || battingTeam?.name || 'Team'}
                           </Typography>
-                          {isTeam1Batting && (
-                            <Chip 
-                              label="Batting" 
-                              size="small" 
-                              sx={{ 
-                                mt: 0.5, 
-                                height: 24,
-                                fontSize: '0.7rem',
-                                fontWeight: 700,
-                                background: 'rgba(255,255,255,0.25)',
-                                color: 'white',
-                                border: '1px solid rgba(255,255,255,0.3)'
-                              }} 
-                            />
-                          )}
+                          <Chip 
+                            label="Batting" 
+                            size="small" 
+                            sx={{ 
+                              mt: 0.5, 
+                              height: 24,
+                              fontSize: '0.7rem',
+                              fontWeight: 700,
+                              background: 'rgba(255,255,255,0.25)',
+                              color: 'white',
+                              border: '1px solid rgba(255,255,255,0.3)'
+                            }} 
+                          />
                         </Box>
                       </Box>
                       <Box sx={{ textAlign: 'right' }}>
@@ -413,28 +412,23 @@ const LiveScoreboard = () => {
                           variant="h2" 
                           fontWeight={900} 
                           sx={{
-                            color: isTeam1Batting ? 'white' : 'text.primary',
+                            color: 'white',
                             fontSize: { xs: '2rem', md: '2.5rem' },
                             lineHeight: 1,
-                            textShadow: isTeam1Batting ? '2px 2px 8px rgba(0,0,0,0.3)' : 'none',
+                            textShadow: '2px 2px 8px rgba(0,0,0,0.3)',
                             mb: 0.5
                           }}
                         >
-                          {match.innings?.[0]?.battingTeamId === match.team1Id ? 
-                            `${match.innings[0]?.totalRuns || 0}/${match.innings[0]?.totalWickets || 0}` :
-                            match.innings?.[1]?.totalRuns ? `${match.innings[1]?.totalRuns || 0}/${match.innings[1]?.totalWickets || 0}` : '0/0'
-                          }
+                          {`${battingScore.totalRuns || 0}/${battingScore.totalWickets || 0}`}
                         </Typography>
                         <Typography 
                           variant="body2" 
                           sx={{ 
-                            color: isTeam1Batting ? 'rgba(255,255,255,0.9)' : 'text.secondary',
+                            color: 'rgba(255,255,255,0.9)',
                             fontWeight: 600
                           }}
                         >
-                          ({match.innings?.[0]?.battingTeamId === match.team1Id 
-                            ? (match.innings[0]?.totalOvers || '0.0') 
-                            : (match.innings?.[1]?.totalOvers || '0.0')}/{totalOvers} overs)
+                          ({battingScore.totalOvers || '0.0'}/{totalOvers} overs)
                         </Typography>
                       </Box>
                     </Box>
@@ -442,7 +436,7 @@ const LiveScoreboard = () => {
 
                   <Divider sx={{ my: 3, borderColor: 'rgba(0,0,0,0.08)' }} />
 
-                  {/* Team 2 - Non-Batting Team */}
+                  {/* Bowling Team - Always on bottom */}
                   <Box>
                     <Box sx={{ 
                       display: 'flex', 
@@ -450,34 +444,28 @@ const LiveScoreboard = () => {
                       alignItems: 'center',
                       p: 3,
                       borderRadius: 3,
-                      background: !isTeam1Batting 
-                        ? 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
-                        : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                      border: !isTeam1Batting ? 'none' : '1px solid rgba(0,0,0,0.08)',
-                      boxShadow: !isTeam1Batting ? '0 8px 24px rgba(240, 147, 251, 0.3)' : 'none',
+                      background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                      border: '1px solid rgba(0,0,0,0.08)',
                       transition: 'all 0.3s ease',
                       '&:hover': {
                         transform: 'scale(1.02)',
-                        boxShadow: !isTeam1Batting ? '0 12px 32px rgba(240, 147, 251, 0.4)' : '0 4px 12px rgba(0,0,0,0.1)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                       }
                     }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
                         <Avatar 
-                          src={match.team2?.logo} 
-                          alt={match.team2?.name}
+                          src={bowlingTeam?.logo} 
+                          alt={bowlingTeam?.name}
                           sx={{ 
                             width: 56, 
                             height: 56,
-                            background: !isTeam1Batting 
-                              ? 'rgba(255,255,255,0.25)' 
-                              : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
                             fontSize: '1.5rem',
                             fontWeight: 800,
-                            border: !isTeam1Batting ? '2px solid rgba(255,255,255,0.3)' : 'none',
-                            boxShadow: !isTeam1Batting ? '0 4px 12px rgba(0,0,0,0.2)' : '0 4px 12px rgba(240, 147, 251, 0.3)'
+                            boxShadow: '0 4px 12px rgba(240, 147, 251, 0.3)'
                           }}
                         >
-                          {match.team2?.shortName?.charAt(0) || match.team2?.name?.charAt(0) || 'T2'}
+                          {bowlingTeam?.shortName?.charAt(0) || bowlingTeam?.name?.charAt(0) || 'T'}
                         </Avatar>
                         <Box>
                           <Typography 
@@ -485,24 +473,22 @@ const LiveScoreboard = () => {
                             fontWeight={800} 
                             sx={{ 
                               lineHeight: 1.2,
-                              color: !isTeam1Batting ? 'white' : 'text.primary',
+                              color: 'text.primary',
                               mb: 0.5
                             }}
                           >
-                            {match.team2?.shortName || match.team2?.name || 'Team 2'}
+                            {bowlingTeam?.shortName || bowlingTeam?.name || 'Team'}
                           </Typography>
-                          {!isTeam1Batting && (
+                          {bowlingScore.totalRuns > 0 && (
                             <Chip 
                               label="Batting" 
                               size="small" 
+                              color="primary"
                               sx={{ 
                                 mt: 0.5, 
                                 height: 24,
                                 fontSize: '0.7rem',
-                                fontWeight: 700,
-                                background: 'rgba(255,255,255,0.25)',
-                                color: 'white',
-                                border: '1px solid rgba(255,255,255,0.3)'
+                                fontWeight: 700
                               }} 
                             />
                           )}
@@ -511,14 +497,14 @@ const LiveScoreboard = () => {
                       <Typography 
                         variant="h6" 
                         sx={{ 
-                          color: !isTeam1Batting ? 'white' : 'text.secondary',
+                          color: 'text.secondary',
                           fontWeight: 700,
                           fontSize: '1.25rem'
                         }}
                       >
-                        {match.innings?.[0]?.battingTeamId === match.team2Id ? 
-                          `${match.innings[0]?.totalRuns || 0}/${match.innings[0]?.totalWickets || 0}` :
-                          match.innings?.[1]?.totalRuns ? `${match.innings[1]?.totalRuns || 0}/${match.innings[1]?.totalWickets || 0}` : 'Yet to bat'
+                        {bowlingScore.totalRuns > 0 ? 
+                          `${bowlingScore.totalRuns || 0}/${bowlingScore.totalWickets || 0}` : 
+                          'Yet to bat'
                         }
                       </Typography>
                     </Box>

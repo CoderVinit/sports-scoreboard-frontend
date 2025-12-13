@@ -157,7 +157,9 @@ const MatchDetails = () => {
           <Paper elevation={2} sx={{ mb: 3 }}>
             <Box sx={{ bgcolor: 'primary.main', color: 'white', p: 2 }}>
               <Typography variant="h6" fontWeight="bold">
-                {match.team1?.shortName || match.team1?.name || 'Team 1'} Innings - {match.innings?.[0]?.totalRuns || 0}/{match.innings?.[0]?.totalWickets || 0} ({match.innings?.[0]?.totalOvers || '0.0'} ov)
+                {match.innings?.[0]?.battingTeam?.shortName || match.innings?.[0]?.battingTeam?.name || 
+                 (match.innings?.[0]?.battingTeamId === match.team1Id ? (match.team1?.shortName || match.team1?.name) : (match.team2?.shortName || match.team2?.name)) || 
+                 'Team'} Innings - {match.innings?.[0]?.totalRuns || 0}/{match.innings?.[0]?.totalWickets || 0} ({match.innings?.[0]?.totalOvers || '0.0'} ov)
               </Typography>
             </Box>
             
@@ -247,7 +249,9 @@ const MatchDetails = () => {
           <Paper elevation={2} sx={{ mb: 3 }}>
             <Box sx={{ bgcolor: 'secondary.main', color: 'white', p: 2 }}>
               <Typography variant="h6" fontWeight="bold">
-                {match.team2?.shortName || match.team2?.name || 'Team 2'} Bowling
+                {match.innings?.[0]?.bowlingTeam?.shortName || match.innings?.[0]?.bowlingTeam?.name || 
+                 (match.innings?.[0]?.bowlingTeamId === match.team2Id ? (match.team2?.shortName || match.team2?.name) : (match.team1?.shortName || match.team1?.name)) || 
+                 'Team'} Bowling
               </Typography>
             </Box>
             
