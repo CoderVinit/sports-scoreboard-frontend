@@ -110,6 +110,41 @@ const MatchDetails = () => {
     ? primaryInnings.battingTeam || getTeamById(primaryInnings.battingTeamId)
     : null;
 
+  // Result text when match is finished / both innings done
+  const winnerTeam = match.winner || getTeamById(match.winnerId);
+  let resultText = '';
+
+  if (match.status === 'completed' || (firstInnings && secondInnings)) {
+    if (winnerTeam && match.winMargin) {
+      resultText = `${winnerTeam.shortName || winnerTeam.name} won by ${match.winMargin}`;
+    } else if (match.resultType === 'tie') {
+      resultText = 'Match tied';
+    } else if (match.resultType === 'no_result') {
+      resultText = 'No result';
+    } else if (firstInnings && secondInnings) {
+      const firstRuns = firstInnings.totalRuns || 0;
+      const secondRuns = secondInnings.totalRuns || 0;
+      const target = secondInnings.target || (firstRuns + 1);
+
+      if (secondRuns >= target) {
+        const wicketsRemaining = 10 - (secondInnings.totalWickets || 0);
+        const chasingTeam = secondInningsBattingTeam || getTeamById(secondInnings.battingTeamId);
+        if (chasingTeam) {
+          const wk = wicketsRemaining > 0 ? wicketsRemaining : 1;
+          resultText = `${chasingTeam.shortName || chasingTeam.name} won by ${wk} wicket${wk === 1 ? '' : 's'}`;
+        }
+      } else if (firstRuns > secondRuns) {
+        const margin = firstRuns - secondRuns;
+        const defendingTeam = firstInningsBattingTeam || getTeamById(firstInnings.battingTeamId);
+        if (defendingTeam) {
+          resultText = `${defendingTeam.shortName || defendingTeam.name} won by ${margin} run${margin === 1 ? '' : 's'}`;
+        }
+      } else if (firstRuns === secondRuns) {
+        resultText = 'Match tied';
+      }
+    }
+  }
+
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
       {/* Match Header */}
@@ -191,6 +226,11 @@ const MatchDetails = () => {
 
         {/* Match Info */}
         <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'rgba(255,255,255,0.2)' }}>
+          {resultText && (
+            <Typography variant="body1" sx={{ mb: 0.5 }} fontWeight="bold">
+              {resultText}
+            </Typography>
+          )}
           <Typography variant="body2">
             {match.tossWinner?.shortName || match.tossWinner?.name || 'Team'} won the toss and chose to {match.tossDecision}
           </Typography>
