@@ -233,6 +233,13 @@ const HomePage = () => {
               const totalOvers = match.totalOvers || (match.matchFormat === 'T20' ? 20 : match.matchFormat === 'ODI' ? 50 : 90);
               const progress = currentInnings ? (parseFloat(currentInnings.totalOvers || 0) / totalOvers) * 100 : 0;
               
+              // Determine which team is batting first
+              const isTeam1Batting = match.innings?.[0]?.battingTeamId === match.team1Id;
+              const battingTeam = isTeam1Batting ? match.team1 : match.team2;
+              const bowlingTeam = isTeam1Batting ? match.team2 : match.team1;
+              const battingScore = match.innings?.[0] || { totalRuns: 0, totalWickets: 0 };
+              const bowlingScore = match.innings?.[1] || { totalRuns: 0, totalWickets: 0 };
+              
               return (
                 <Grid item xs={12} md={6} key={match.id}>
                   <Card 
@@ -309,6 +316,7 @@ const HomePage = () => {
                       </Box>
                       
                       <Box sx={{ my: 3 }}>
+                        {/* Batting Team - Always on top */}
                         <Box sx={{ 
                           display: 'flex', 
                           justifyContent: 'space-between', 
@@ -333,25 +341,23 @@ const HomePage = () => {
                               fontWeight: 700,
                               boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
                             }}>
-                              {(match.team1?.name || match.Team1?.name || 'T1').charAt(0)}
+                              {(battingTeam?.name || 'T').charAt(0)}
                             </Avatar>
                             <Box>
                               <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1.2 }}>
-                                {match.team1?.name || match.Team1?.name}
+                                {battingTeam?.name || 'Team'}
                               </Typography>
-                              {match.innings?.[0]?.battingTeamId === match.team1Id && (
-                                <Chip 
-                                  label="Batting" 
-                                  size="small" 
-                                  color="primary" 
-                                  sx={{ 
-                                    mt: 0.5, 
-                                    height: 20, 
-                                    fontSize: '0.65rem',
-                                    fontWeight: 600
-                                  }} 
-                                />
-                              )}
+                              <Chip 
+                                label="Batting" 
+                                size="small" 
+                                color="primary" 
+                                sx={{ 
+                                  mt: 0.5, 
+                                  height: 20, 
+                                  fontSize: '0.65rem',
+                                  fontWeight: 600
+                                }} 
+                              />
                             </Box>
                           </Box>
                           <Typography variant="h3" fontWeight={800} sx={{
@@ -361,15 +367,13 @@ const HomePage = () => {
                             backgroundClip: 'text',
                             fontSize: { xs: '1.75rem', md: '2.25rem' }
                           }}>
-                            {match.innings?.[0]?.battingTeamId === match.team1Id ? 
-                              `${match.innings[0]?.totalRuns || 0}/${match.innings[0]?.totalWickets || 0}` :
-                              match.innings?.[1]?.totalRuns ? `${match.innings[1]?.totalRuns || 0}/${match.innings[1]?.totalWickets || 0}` : '0/0'
-                            }
+                            {`${battingScore.totalRuns || 0}/${battingScore.totalWickets || 0}`}
                           </Typography>
                         </Box>
                         
                         <Divider sx={{ my: 2.5, borderColor: 'rgba(0,0,0,0.08)' }} />
                         
+                        {/* Bowling/Non-batting Team - Always on bottom */}
                         <Box sx={{ 
                           display: 'flex', 
                           justifyContent: 'space-between', 
@@ -393,13 +397,13 @@ const HomePage = () => {
                               fontWeight: 700,
                               boxShadow: '0 4px 12px rgba(240, 147, 251, 0.3)'
                             }}>
-                              {(match.team2?.name || match.Team2?.name || 'T2').charAt(0)}
+                              {(bowlingTeam?.name || 'T').charAt(0)}
                             </Avatar>
                             <Box>
                               <Typography variant="h6" fontWeight={600} sx={{ lineHeight: 1.2 }}>
-                                {match.team2?.name || match.Team2?.name}
+                                {bowlingTeam?.name || 'Team'}
                               </Typography>
-                              {match.innings?.[0]?.battingTeamId === match.team2Id && (
+                              {bowlingScore.totalRuns > 0 && (
                                 <Chip 
                                   label="Batting" 
                                   size="small" 
@@ -415,9 +419,9 @@ const HomePage = () => {
                             </Box>
                           </Box>
                           <Typography variant="h6" fontWeight={700} color="text.secondary">
-                            {match.innings?.[0]?.battingTeamId === match.team2Id ? 
-                              `${match.innings[0]?.totalRuns || 0}/${match.innings[0]?.totalWickets || 0}` :
-                              match.innings?.[1]?.totalRuns ? `${match.innings[1]?.totalRuns || 0}/${match.innings[1]?.totalWickets || 0}` : 'Yet to bat'
+                            {bowlingScore.totalRuns > 0 ? 
+                              `${bowlingScore.totalRuns || 0}/${bowlingScore.totalWickets || 0}` : 
+                              'Yet to bat'
                             }
                           </Typography>
                         </Box>
