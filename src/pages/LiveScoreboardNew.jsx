@@ -242,7 +242,7 @@ const LiveScoreboard = () => {
           const totalOvers = match.totalOvers || (match.matchFormat === 'T20' ? 20 : match.matchFormat === 'ODI' ? 50 : 90);
           const currentOvers = parseFloat(match.innings?.[0]?.totalOvers || 0);
           const progress = getProgressPercentage(currentOvers, totalOvers);
-          const isTeam1Batting = match.innings?.[0]?.battingTeamId === match.team1Id || match.currentInnings === 1;
+          const isTeam1Batting = match.innings?.[0]?.battingTeamId === match.team1Id;
           
           return (
             <Grid item xs={12} md={6} key={match.id}>
