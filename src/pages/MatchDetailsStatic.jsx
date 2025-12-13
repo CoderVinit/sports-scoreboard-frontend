@@ -41,6 +41,7 @@ const MatchDetails = () => {
 
     fetchMatchData();
 
+   
     // Socket.IO real-time updates
     const socket = getSocket();
     
@@ -56,6 +57,8 @@ const MatchDetails = () => {
       socket.off('ballRecorded');
     };
   }, [matchId]);
+
+  console.log({match});
 
   if (loading) {
     return (
@@ -104,11 +107,13 @@ const MatchDetails = () => {
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <Box sx={{ mb: 2 }}>
-              <Typography variant="h4" fontWeight="bold">
-                {match.team1?.logo || '🏏'} {match.team1?.shortName || match.team1?.name || 'Team 1'}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                {/* {match.team1?.logo || '🏏'} {match.team1?.shortName || match.team1?.name || 'Team 1'} */}
+                <img src={match.team1?.logo} alt={match.team1?.shortName} />
+              </Box>
               <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 2, mt: 1 }}>
                 <Typography variant="h3" fontWeight="bold">
+                  
                   {match.innings?.[0]?.totalRuns || 0}/{match.innings?.[0]?.totalWickets || 0}
                 </Typography>
                 <Typography variant="h6">
@@ -118,9 +123,10 @@ const MatchDetails = () => {
             </Box>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Typography variant="h5" fontWeight="bold">
-              {match.team2?.logo || '🏏'} {match.team2?.shortName || match.team2?.name || 'Team 2'}
-            </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                {/* {match.team1?.logo || '🏏'} {match.team1?.shortName || match.team1?.name || 'Team 1'} */}
+                <img src={match.team2?.logo} alt={match.team2?.shortName} />
+              </Box>
             <Typography variant="body1" sx={{ mt: 1, opacity: 0.9 }}>
               {match.innings?.[1] ? `${match.innings[1].totalRuns}/${match.innings[1].totalWickets} (${match.innings[1].totalOvers} ov)` : 'Yet to bat'}
             </Typography>
