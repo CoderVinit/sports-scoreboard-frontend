@@ -290,6 +290,7 @@ const MatchDetails = () => {
                 </Typography>
               </Box>
             </Box>
+            
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
               <CalendarTodayIcon sx={{ fontSize: 18, opacity: 0.9 }} />
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: { xs: '1rem', md: '1.125rem' } }}>
@@ -317,56 +318,133 @@ const MatchDetails = () => {
         </Box>
 
         {/* Score Display */}
-        <Grid container spacing={3}>
-          {/* Primary (current) innings */}
+        <Grid container spacing={4}>
+          {/* Primary (current) innings - Batting Team */}
           <Grid item xs={12} md={8}>
-            <Box sx={{ mb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                {primaryBattingTeam?.logo && (
-                  <img
-                    src={primaryBattingTeam.logo}
-                    alt={primaryBattingTeam.shortName || primaryBattingTeam.name}
-                    style={{ maxHeight: 40 }}
-                  />
-                )}
-                <Typography variant="h5" fontWeight="bold">
-                  {primaryBattingTeam?.shortName || primaryBattingTeam?.name || 'Team'}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 2, mt: 1 }}>
-                <Typography variant="h3" fontWeight="bold">
-                  {primaryInnings?.totalRuns ?? 0}/{primaryInnings?.totalWickets ?? 0}
-                </Typography>
-                <Typography variant="h6">
-                  ({primaryInnings?.totalOvers || '0.0'} ov)
-                </Typography>
-              </Box>
-              {primaryInnings?.target && (
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  Target: {primaryInnings.target}
-                </Typography>
-              )}
-            </Box>
+            {primaryInnings && primaryBattingTeam && (() => {
+              const battingTeamColors = getTeamColors(primaryBattingTeam.name || primaryBattingTeam.shortName);
+              return (
+                <Box sx={{ 
+                  p: 4, 
+                  borderRadius: 2, 
+                  bgcolor: battingTeamColors.bgColor,
+                  border: `2px solid ${battingTeamColors.borderColor}`,
+                  backdropFilter: 'blur(10px)',
+                  background: `linear-gradient(135deg, ${battingTeamColors.bgColor} 0%, ${hexToRgba(battingTeamColors.primary, 0.15)} 100%)`,
+                  boxShadow: `0 4px 12px ${hexToRgba(battingTeamColors.primary, 0.25)}`
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5, mb: 3 }}>
+                    <Avatar 
+                      src={primaryBattingTeam.logo} 
+                      alt={primaryBattingTeam.shortName || primaryBattingTeam.name}
+                      sx={{ 
+                        width: 64, 
+                        height: 64,
+                        bgcolor: battingTeamColors.primary,
+                        border: `3px solid ${battingTeamColors.accent || battingTeamColors.primary}`,
+                        color: 'white',
+                        fontWeight: 700,
+                        fontSize: '1.75rem'
+                      }}
+                    >
+                      {(primaryBattingTeam.shortName || primaryBattingTeam.name || 'T').charAt(0)}
+                    </Avatar>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="h5" fontWeight={700} sx={{ fontSize: { xs: '1.375rem', md: '1.625rem' }, mb: 0.75, color: 'white' }}>
+                        {primaryBattingTeam.shortName || primaryBattingTeam.name || 'Team'}
+                      </Typography>
+                      <Chip 
+                        label="Batting" 
+                        size="small"
+                        sx={{
+                          bgcolor: battingTeamColors.accent || battingTeamColors.primary,
+                          color: 'white',
+                          fontWeight: 600,
+                          fontSize: '0.8125rem',
+                          height: 26,
+                          border: `1px solid ${battingTeamColors.accent || battingTeamColors.primary}`
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 2.5, flexWrap: 'wrap', mb: 2 }}>
+                    <Typography variant="h2" fontWeight={800} sx={{ fontSize: { xs: '2.25rem', md: '3rem' }, lineHeight: 1, color: 'white' }}>
+                      {primaryInnings.totalRuns ?? 0}/{primaryInnings.totalWickets ?? 0}
+                    </Typography>
+                    <Typography variant="h5" sx={{ opacity: 0.95, fontWeight: 600, fontSize: { xs: '1.125rem', md: '1.375rem' }, color: 'white' }}>
+                      ({primaryInnings.totalOvers || '0.0'} ov)
+                    </Typography>
+                  </Box>
+                  {primaryInnings.target && (
+                    <Box sx={{ 
+                      mt: 2.5, 
+                      pt: 2.5, 
+                      borderTop: `1px solid ${hexToRgba(battingTeamColors.primary, 0.3)}`
+                    }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: battingTeamColors.accent || 'white', fontSize: { xs: '1rem', md: '1.125rem' } }}>
+                        Target: {primaryInnings.target}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              );
+            })()}
           </Grid>
 
-          {/* First innings summary */}
+          {/* First innings summary - Smaller Card */}
           <Grid item xs={12} md={4}>
-            {firstInnings && (
-              <Box
-                sx={{
-                  textAlign: { xs: 'left', md: 'right' },
-                  mt: { xs: 2, md: 0 },
-                }}
-              >
-                <Typography variant="subtitle2" sx={{ opacity: 0.9 }}>
-                  1st Innings -{' '}
-                  {firstInningsBattingTeam?.shortName || firstInningsBattingTeam?.name || 'Team'}
-                </Typography>
-                <Typography variant="h6" fontWeight="bold">
-                  {firstInnings.totalRuns || 0}/{firstInnings.totalWickets || 0} ({firstInnings.totalOvers || '0.0'} ov)
-                </Typography>
-              </Box>
-            )}
+            {firstInnings && firstInningsBattingTeam && (() => {
+              const firstInningsColors = getTeamColors(firstInningsBattingTeam.name || firstInningsBattingTeam.shortName);
+              return (
+                <Box sx={{ 
+                  p: 2.5, 
+                  borderRadius: 2, 
+                  bgcolor: firstInningsColors.bgColor,
+                  border: `2px solid ${firstInningsColors.borderColor}`,
+                  backdropFilter: 'blur(10px)',
+                  background: `linear-gradient(135deg, ${firstInningsColors.bgColor} 0%, ${hexToRgba(firstInningsColors.primary, 0.15)} 100%)`,
+                  boxShadow: `0 4px 12px ${hexToRgba(firstInningsColors.primary, 0.25)}`,
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center'
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                    <Avatar 
+                      src={firstInningsBattingTeam.logo} 
+                      alt={firstInningsBattingTeam.shortName || firstInningsBattingTeam.name}
+                      sx={{ 
+                        width: 48, 
+                        height: 48,
+                        bgcolor: firstInningsColors.primary,
+                        border: `2px solid ${firstInningsColors.accent || firstInningsColors.primary}`,
+                        color: 'white',
+                        fontWeight: 700,
+                        fontSize: '1.25rem'
+                      }}
+                    >
+                      {(firstInningsBattingTeam.shortName || firstInningsBattingTeam.name || 'T').charAt(0)}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1rem', md: '1.125rem' }, mb: 0.5, color: 'white' }}>
+                        {firstInningsBattingTeam.shortName || firstInningsBattingTeam.name || 'Team'}
+                      </Typography>
+                      <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 500, color: 'white', fontSize: '0.75rem' }}>
+                        1st Innings
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box>
+                    <Typography variant="h3" fontWeight={800} sx={{ fontSize: { xs: '1.5rem', md: '1.875rem' }, lineHeight: 1, color: 'white', mb: 0.5 }}>
+                      {firstInnings.totalRuns || 0}/{firstInnings.totalWickets || 0}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500, color: 'white', fontSize: '0.875rem' }}>
+                      ({firstInnings.totalOvers || '0.0'} ov)
+                    </Typography>
+                  </Box>
+                </Box>
+              );
+            })()}
           </Grid>
         </Grid>
 
