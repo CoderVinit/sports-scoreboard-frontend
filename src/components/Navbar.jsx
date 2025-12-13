@@ -2,7 +2,6 @@ import { AppBar, Toolbar, Typography, Button, Box, IconButton, Menu, MenuItem, A
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import SportsCricketIcon from '@mui/icons-material/SportsCricket';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import HomeIcon from '@mui/icons-material/Home';
 import LiveTvIcon from '@mui/icons-material/LiveTv';
@@ -11,7 +10,6 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { logout } from '../features/auth/authSlice';
 import { useState } from 'react';
-import { keyframes } from '@mui/system';
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -39,15 +37,13 @@ const Navbar = () => {
   return (
     <AppBar 
       position="sticky" 
-      elevation={0}
+      elevation={1}
       sx={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        background: '#1976d2',
+        borderBottom: '1px solid #1565c0',
       }}
     >
-      <Toolbar sx={{ py: 1, px: { xs: 2, md: 4 } }}>
+      <Toolbar sx={{ py: 1, px: { xs: 2, md: 3 } }}>
         {/* Logo Section */}
         <Box 
           component={Link} 
@@ -57,38 +53,15 @@ const Navbar = () => {
             alignItems: 'center', 
             textDecoration: 'none',
             color: 'inherit',
-            mr: 4,
-            transition: 'transform 0.3s ease',
-            '&:hover': {
-              transform: 'scale(1.05)',
-            }
+            mr: 3
           }}
         >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 48,
-              height: 48,
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.2)',
-              mr: 1.5,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                background: 'rgba(255, 255, 255, 0.3)',
-                transform: 'rotate(360deg)',
-              }
-            }}
-          >
-            <SportsCricketIcon sx={{ fontSize: 28, color: 'white' }} />
-          </Box>
+          <SportsCricketIcon sx={{ fontSize: 28, mr: 1, color: 'white' }} />
           <Typography 
-            variant="h5" 
+            variant="h6" 
             sx={{ 
-              fontWeight: 800,
+              fontWeight: 600,
               color: 'white',
-              textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
               display: { xs: 'none', sm: 'block' }
             }}
           >
@@ -97,25 +70,18 @@ const Navbar = () => {
         </Box>
 
         {/* Navigation Links */}
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexGrow: 1 }}>
+        <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', flexGrow: 1 }}>
           <Button
             component={Link}
             to="/"
             startIcon={<HomeIcon />}
             sx={{
               color: 'white',
-              fontWeight: isActive('/') ? 700 : 500,
+              fontWeight: isActive('/') ? 600 : 400,
               textTransform: 'none',
               px: 2,
-              py: 1,
-              borderRadius: 2,
-              background: isActive('/') 
-                ? 'rgba(255, 255, 255, 0.25)' 
-                : 'transparent',
-              transition: 'all 0.3s ease',
               '&:hover': {
-                background: 'rgba(255, 255, 255, 0.2)',
-                transform: 'translateY(-2px)',
+                background: 'rgba(255, 255, 255, 0.1)',
               },
             }}
           >
@@ -128,18 +94,11 @@ const Navbar = () => {
             startIcon={<LiveTvIcon />}
             sx={{
               color: 'white',
-              fontWeight: isActive('/live') ? 700 : 500,
+              fontWeight: isActive('/live') ? 600 : 400,
               textTransform: 'none',
               px: 2,
-              py: 1,
-              borderRadius: 2,
-              background: isActive('/live') 
-                ? 'rgba(255, 255, 255, 0.25)' 
-                : 'transparent',
-              transition: 'all 0.3s ease',
               '&:hover': {
-                background: 'rgba(255, 255, 255, 0.2)',
-                transform: 'translateY(-2px)',
+                background: 'rgba(255, 255, 255, 0.1)',
               },
             }}
           >
@@ -153,18 +112,11 @@ const Navbar = () => {
               startIcon={<AdminPanelSettingsIcon />}
               sx={{
                 color: 'white',
-                fontWeight: isActive('/admin') ? 700 : 500,
+                fontWeight: isActive('/admin') ? 600 : 400,
                 textTransform: 'none',
                 px: 2,
-                py: 1,
-                borderRadius: 2,
-                background: isActive('/admin') 
-                  ? 'rgba(255, 255, 255, 0.25)' 
-                  : 'transparent',
-                transition: 'all 0.3s ease',
                 '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  transform: 'translateY(-2px)',
+                  background: 'rgba(255, 255, 255, 0.1)',
                 },
               }}
             >
@@ -174,18 +126,15 @@ const Navbar = () => {
         </Box>
 
         {/* Auth Section */}
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', ml: 2 }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           {isAuthenticated ? (
             <>
               <IconButton
                 onClick={handleMenuOpen}
                 sx={{
                   color: 'white',
-                  background: 'rgba(255, 255, 255, 0.15)',
-                  transition: 'all 0.3s ease',
                   '&:hover': {
-                    background: 'rgba(255, 255, 255, 0.25)',
-                    transform: 'scale(1.1)',
+                    background: 'rgba(255, 255, 255, 0.1)',
                   },
                 }}
               >
@@ -193,9 +142,9 @@ const Navbar = () => {
                   sx={{ 
                     width: 32, 
                     height: 32,
-                    background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 100%)',
+                    background: '#1565c0',
                     fontSize: '0.875rem',
-                    fontWeight: 700
+                    fontWeight: 600
                   }}
                 >
                   {user?.username?.charAt(0)?.toUpperCase() || 'U'}
@@ -206,13 +155,10 @@ const Navbar = () => {
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
                 PaperProps={{
-                  elevation: 8,
+                  elevation: 4,
                   sx: {
-                    mt: 1.5,
+                    mt: 1,
                     minWidth: 200,
-                    borderRadius: 2,
-                    background: 'white',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
                     '& .MuiMenuItem-root': {
                       px: 2,
                       py: 1.5,
@@ -228,27 +174,26 @@ const Navbar = () => {
                       sx={{ 
                         width: 40, 
                         height: 40,
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        background: '#1976d2',
                         fontSize: '1rem',
-                        fontWeight: 700
+                        fontWeight: 600
                       }}
                     >
                       {user?.username?.charAt(0)?.toUpperCase() || 'U'}
                     </Avatar>
                     <Box>
-                      <Typography variant="body2" fontWeight={700} color="text.primary">
+                      <Typography variant="body2" fontWeight={600} color="text.primary">
                         {user?.username || 'User'}
                       </Typography>
                       {isAdmin && (
                         <Chip 
                           label="Admin" 
                           size="small" 
+                          color="primary"
                           sx={{ 
                             mt: 0.5,
                             height: 20,
                             fontSize: '0.65rem',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            color: 'white',
                             fontWeight: 600
                           }} 
                         />
@@ -261,14 +206,13 @@ const Navbar = () => {
                   onClick={handleLogout}
                   sx={{
                     color: 'error.main',
-                    transition: 'all 0.2s ease',
                     '&:hover': {
                       background: 'rgba(244, 67, 54, 0.08)',
                     },
                   }}
                 >
                   <LogoutIcon sx={{ mr: 1.5, fontSize: 20 }} />
-                  <Typography variant="body2" fontWeight={600}>Logout</Typography>
+                  <Typography variant="body2" fontWeight={500}>Logout</Typography>
                 </MenuItem>
               </Menu>
             </>
@@ -281,14 +225,8 @@ const Navbar = () => {
                 sx={{
                   color: 'white',
                   textTransform: 'none',
-                  px: 2,
-                  py: 1,
-                  borderRadius: 2,
-                  background: 'rgba(255, 255, 255, 0.15)',
-                  transition: 'all 0.3s ease',
                   '&:hover': {
-                    background: 'rgba(255, 255, 255, 0.25)',
-                    transform: 'translateY(-2px)',
+                    background: 'rgba(255, 255, 255, 0.1)',
                   },
                 }}
               >
@@ -301,18 +239,11 @@ const Navbar = () => {
                 variant="contained"
                 sx={{
                   background: 'white',
-                  color: '#667eea',
+                  color: '#1976d2',
                   textTransform: 'none',
-                  px: 2.5,
-                  py: 1,
-                  borderRadius: 2,
-                  fontWeight: 700,
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                  transition: 'all 0.3s ease',
+                  fontWeight: 600,
                   '&:hover': {
-                    background: 'rgba(255, 255, 255, 0.95)',
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.2)',
+                    background: '#f5f5f5',
                   },
                 }}
               >
