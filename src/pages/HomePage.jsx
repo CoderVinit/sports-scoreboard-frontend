@@ -38,20 +38,16 @@ const HomePage = () => {
 
     fetchData();
 
-    // Socket.IO real-time updates
+    // Socket.IO real-time updates only (no polling)
     const socket = getSocket();
     
-    socket.on('ballRecorded', (data) => {
+    socket.on('ballRecorded', () => {
       console.log('Ball recorded - refreshing home page data');
       fetchData();
     });
 
-    // Also keep polling as fallback
-    const interval = setInterval(fetchData, 30000); // Increased to 30s since socket provides real-time updates
-    
     return () => {
       socket.off('ballRecorded');
-      clearInterval(interval);
     };
   }, []);
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Grid, Card, CardContent, Typography, Box, Paper, Button, CircularProgress } from '@mui/material';
+import { Grid, Card, CardContent, Typography, Box, Button, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import SportsCricketIcon from '@mui/icons-material/SportsCricket';
@@ -7,6 +7,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import GroupsIcon from '@mui/icons-material/Groups';
 import ScoreboardIcon from '@mui/icons-material/Scoreboard';
 import { matchService, teamService, playerService } from '../../api/services';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 const AdminDashboardStatic = () => {
   const navigate = useNavigate();
@@ -50,24 +51,16 @@ const AdminDashboardStatic = () => {
 
   if (loading) {
     return (
-      <Container>
+      <AdminLayout title="Admin Dashboard" subtitle={`Welcome, ${user?.username || ''}`}> 
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
           <CircularProgress />
         </Box>
-      </Container>
+      </AdminLayout>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: 'primary.main', color: 'white' }}>
-        <Typography variant="h4" fontWeight="bold">
-          Admin Dashboard
-        </Typography>
-        <Typography variant="body1">
-          Welcome, {user?.username}!
-        </Typography>
-      </Paper>
+    <AdminLayout title="Admin Dashboard" subtitle={`Welcome, ${user?.username || ''}`}>
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
@@ -223,7 +216,7 @@ const AdminDashboardStatic = () => {
           </Card>
         </Grid>
       </Grid>
-    </Container>
+    </AdminLayout>
   );
 };
 

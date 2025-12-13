@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Container, Paper, Typography, Box, Grid, TextField, Button,
+  Paper, Typography, Box, Grid, TextField, Button,
   Select, MenuItem, FormControl, InputLabel, Card, CardContent,
   Divider, Chip, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, CircularProgress, Alert, Snackbar
 } from '@mui/material';
-import { matchService, ballService, playerService } from '../../api/services';
+import { matchService, ballService, playerService, inningsService } from '../../api/services';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 const AdminScoreEntryStatic = () => {
   const { matchId } = useParams();
@@ -42,59 +43,57 @@ const AdminScoreEntryStatic = () => {
     balls: []
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [matchData, statsData, playersData] = await Promise.all([
-          matchService.getMatchDetails(matchId),
-          matchService.getMatchStatistics(matchId),
-          playerService.getAllPlayers()
-        ]);
-        
-        setMatch(matchData.data || matchData.match);
-        setStatistics(statsData.data || statsData);
-        setPlayers(playersData.data || playersData.players || []);
-        
-        // Initialize score data from match
-        const matchInfo = matchData.data || matchData.match;
-        if (matchInfo) {
-          // Get the current innings data
-          const currentInnings = matchInfo.innings?.[matchInfo.currentInnings - 1];
-          
-          // Fetch last 5 balls if innings exists
-          let recentBalls = [];
-          if (currentInnings?.id) {
-            try {
-              const ballsData = await ballService.getRecentBalls(currentInnings.id, 5);
-              recentBalls = (ballsData.data || ballsData.balls || []).map(ball => {
-                const runs = (ball.runs || 0) + (ball.extras || 0);
-                const isWicket = ball.isWicket;
-                return { runs, isWicket };
-              });
-            } catch (err) {
-              console.log('No balls recorded yet');
-            }
-          }
-          
-          setScoreData({
-            runs: currentInnings?.totalRuns || 0,
-            wickets: currentInnings?.totalWickets || 0,
-            overs: parseFloat(currentInnings?.totalOvers || 0),
-            currentOver: Math.floor(parseFloat(currentInnings?.totalOvers || 0)),
-            currentBallInOver: Math.round((parseFloat(currentInnings?.totalOvers || 0) % 1) * 10),
-            balls: recentBalls
-          });
-        }
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(err.message || 'Failed to load match data');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadMatchData = async () => {
+    try {
+      setLoading(true);
+      const [matchData, statsData, playersData] = await Promise.all([
+        matchService.getMatchDetails(matchId),
+        matchService.getMatchStatistics(matchId),
+        playerService.getAllPlayers()
+      ]);
+      
+      const matchInfo = matchData.data || matchData.match;
+      setMatch(matchInfo);
+      setStatistics(statsData.data || statsData);
+      setPlayers(playersData.data || playersData.players || []);
+      
+      if (matchInfo) {
+        const currentInnings = matchInfo.innings?.[matchInfo.currentInnings - 1];
 
-    fetchData();
+        let recentBalls = [];
+        if (currentInnings?.id) {
+          try {
+            const ballsData = await ballService.getRecentBalls(currentInnings.id, 5);
+            recentBalls = (ballsData.data || ballsData.balls || []).map(ball => {
+              const runs = (ball.runs || 0) + (ball.extras || 0);
+              const isWicket = ball.isWicket;
+              return { runs, isWicket };
+            });
+          } catch {
+            console.log('No balls recorded yet');
+          }
+        }
+
+        setScoreData({
+          runs: currentInnings?.totalRuns || 0,
+          wickets: currentInnings?.totalWickets || 0,
+          overs: parseFloat(currentInnings?.totalOvers || 0),
+          currentOver: Math.floor(parseFloat(currentInnings?.totalOvers || 0)),
+          currentBallInOver: Math.round((parseFloat(currentInnings?.totalOvers || 0) % 1) * 10),
+          balls: recentBalls
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError(err.message || 'Failed to load match data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadMatchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchId]);
 
   const handleBallSubmit = async () => {
@@ -204,26 +203,79 @@ const AdminScoreEntryStatic = () => {
     }
   };
 
+  const handleStartSecondInnings = async () => {
+    if (!match) return;
+
+    try {
+      setSubmitting(true);
+
+      const firstInnings = match.innings?.find((inn) => inn.inningsNumber === 1);
+      if (!firstInnings) {
+        setError('First innings data not found');
+        return;
+      }
+
+      const battingFirstId = match.battingFirstId || match.team1Id;
+      const secondBattingTeamId = battingFirstId === match.team1Id ? match.team2Id : match.team1Id;
+      const secondBowlingTeamId = battingFirstId;
+
+      const target = (firstInnings.totalRuns || 0) + 1;
+      const totalOversPerSide = match.totalOvers || firstInnings.totalOvers || 0;
+      const requiredRunRate = totalOversPerSide > 0 ? target / totalOversPerSide : null;
+
+      // Mark first innings as completed and set target
+      await inningsService.updateInnings(firstInnings.id, {
+        status: 'completed',
+        target,
+      });
+
+      // Create second innings
+      await inningsService.createInnings({
+        matchId: match.id,
+        battingTeamId: secondBattingTeamId,
+        bowlingTeamId: secondBowlingTeamId,
+        inningsNumber: 2,
+        status: 'in_progress',
+        target,
+        requiredRunRate,
+      });
+
+      // Update match to point to second innings
+      await matchService.updateMatch(match.id, { currentInnings: 2 });
+
+      await loadMatchData();
+      setSuccessMessage('Second innings started');
+    } catch (err) {
+      console.error('Error starting second innings:', err);
+      setError(err.message || 'Failed to start second innings');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (loading) {
     return (
-      <Container>
+      <AdminLayout title="Score Entry" subtitle="Record ball-by-ball updates for the selected match.">
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
           <CircularProgress />
         </Box>
-      </Container>
+      </AdminLayout>
     );
   }
 
   if (!match) {
     return (
-      <Container>
+      <AdminLayout title="Score Entry" subtitle="Record ball-by-ball updates for the selected match.">
         <Typography color="error" variant="h6">Match not found</Typography>
-      </Container>
+      </AdminLayout>
     );
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
+    <AdminLayout
+      title="Score Entry"
+      subtitle={`Recording for match #${match.id} - ${match.team1?.name || match.Team1?.name || 'Team 1'} vs ${match.team2?.name || match.Team2?.name || 'Team 2'}`}
+    >
       <Snackbar 
         open={!!successMessage} 
         autoHideDuration={3000} 
@@ -264,16 +316,43 @@ const AdminScoreEntryStatic = () => {
         </Typography>
       </Paper>
 
-      <Grid container spacing={3}>
+      {/** Determine if first innings is complete and second innings can be started */}
+      {(() => {
+        const hasSecondInnings = match.innings?.some((inn) => inn.inningsNumber === 2);
+        const inningsComplete = scoreData.overs >= (match.totalOvers || 0) || scoreData.wickets >= 10;
+        const canStartSecondInnings = !hasSecondInnings && match.currentInnings === 1 && inningsComplete;
+
+        if (!canStartSecondInnings) return null;
+
+        return (
+          <Box sx={{ mb: 2 }}>
+            <Alert severity="info" sx={{ mb: 1 }}>
+              First innings complete. Start the second innings when ready.
+            </Alert>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleStartSecondInnings}
+              disabled={submitting}
+            >
+              {submitting ? 'Starting second innings...' : 'Start Second Innings'}
+            </Button>
+          </Box>
+        );
+      })()}
+
+      <Grid container spacing={2}>
         {/* Current Score Display */}
         <Grid item xs={12} md={4}>
           <Card>
-            <CardContent sx={{ bgcolor: 'success.light', color: 'white' }}>
-              <Typography variant="h6" gutterBottom>Current Score</Typography>
-              <Typography variant="h2" fontWeight="bold">
+            <CardContent>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Current score
+              </Typography>
+              <Typography variant="h4" fontWeight="bold">
                 {scoreData.runs}/{scoreData.wickets}
               </Typography>
-              <Typography variant="h6">
+              <Typography variant="body1" color="text.secondary">
                 {scoreData.overs} overs
               </Typography>
             </CardContent>
@@ -281,7 +360,9 @@ const AdminScoreEntryStatic = () => {
 
           <Card sx={{ mt: 2 }}>
             <CardContent>
-              <Typography variant="h6" gutterBottom>Last 5 Balls</Typography>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Last 5 balls
+              </Typography>
               <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                 {scoreData.balls.map((ball, index) => {
                   const displayText = ball.isWicket 
@@ -296,8 +377,7 @@ const AdminScoreEntryStatic = () => {
                       key={index}
                       label={displayText}
                       color={chipColor}
-                      size="large"
-                      sx={{ fontSize: '1.2rem', fontWeight: 'bold' }}
+                      size="small"
                     />
                   );
                 })}
@@ -308,7 +388,7 @@ const AdminScoreEntryStatic = () => {
 
         {/* Ball Entry Form */}
         <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 3 }}>
+          <Paper sx={{ p: { xs: 2, md: 3 } }}>
             <Typography variant="h5" gutterBottom fontWeight="bold">
               Enter Ball Details
             </Typography>
@@ -318,53 +398,23 @@ const AdminScoreEntryStatic = () => {
             <Box 
               sx={{ 
                 mb: 3, 
-                p: 2.5, 
-                bgcolor: 'primary.main', 
-                color: 'white', 
-                borderRadius: 2,
-                textAlign: 'center',
-                boxShadow: 3
+                p: 2, 
+                bgcolor: 'grey.100', 
+                borderRadius: 1,
+                textAlign: 'left'
               }}
             >
-              <Typography variant="subtitle2" sx={{ mb: 1, opacity: 0.9 }}>
-                NEXT BALL TO BE BOWLED
+              <Typography variant="subtitle2" color="text.secondary">
+                Next ball
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                <Box>
-                  <Typography variant="h3" fontWeight="bold">
-                    {scoreData.currentOver}.{scoreData.currentBallInOver + 1}
-                  </Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                    Over.Ball
-                  </Typography>
-                </Box>
-                <Divider orientation="vertical" flexItem sx={{ bgcolor: 'white', opacity: 0.3 }} />
-                <Box>
-                  <Typography variant="h5" fontWeight="bold">
-                    Ball {scoreData.currentBallInOver + 1}/6
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 0.5, mt: 1 }}>
-                    {[1, 2, 3, 4, 5, 6].map((ball) => (
-                      <Box
-                        key={ball}
-                        sx={{
-                          width: 12,
-                          height: 12,
-                          borderRadius: '50%',
-                          bgcolor: ball <= scoreData.currentBallInOver ? 'success.light' : 'white',
-                          border: ball === scoreData.currentBallInOver + 1 ? '2px solid yellow' : 'none',
-                          boxShadow: ball === scoreData.currentBallInOver + 1 ? '0 0 8px yellow' : 'none'
-                        }}
-                      />
-                    ))}
-                  </Box>
-                </Box>
-              </Box>
+              <Typography variant="body2">
+                Over {scoreData.currentOver}.{scoreData.currentBallInOver + 1}  b7 Ball {scoreData.currentBallInOver + 1} of 6
+              </Typography>
             </Box>
 
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
+                <FormControl fullWidth size="small">
                   <InputLabel>Batsman (Striker)</InputLabel>
                   <Select
                     value={currentBall.batsmanId}
@@ -385,7 +435,7 @@ const AdminScoreEntryStatic = () => {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
+                <FormControl fullWidth size="small">
                   <InputLabel>Non-Striker</InputLabel>
                   <Select
                     value={currentBall.nonStrikerId}
@@ -406,7 +456,7 @@ const AdminScoreEntryStatic = () => {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
+                <FormControl fullWidth size="small">
                   <InputLabel>Bowler</InputLabel>
                   <Select
                     value={currentBall.bowlerId}
@@ -432,14 +482,14 @@ const AdminScoreEntryStatic = () => {
                 <Typography variant="subtitle1" gutterBottom fontWeight="bold">
                   Runs Scored
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   {[0, 1, 2, 3, 4, 6].map((run) => (
                     <Button
                       key={run}
                       variant={currentBall.runs === run.toString() ? 'contained' : 'outlined'}
                       onClick={() => setCurrentBall({ ...currentBall, runs: run.toString() })}
-                      size="large"
-                      sx={{ minWidth: '60px' }}
+                      size="small"
+                      sx={{ minWidth: { xs: '48px', sm: '60px' }, flex: { xs: '1 1 30%', sm: '0 0 auto' } }}
                     >
                       {run}
                     </Button>
@@ -448,7 +498,7 @@ const AdminScoreEntryStatic = () => {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
+                <FormControl fullWidth size="small">
                   <InputLabel>Extra Type</InputLabel>
                   <Select
                     value={currentBall.extraType}
@@ -469,6 +519,7 @@ const AdminScoreEntryStatic = () => {
                   label="Extra Runs"
                   type="number"
                   value={currentBall.extras}
+                  size="small"
                   onChange={(e) => setCurrentBall({ ...currentBall, extras: e.target.value })}
                 />
               </Grid>
@@ -486,7 +537,7 @@ const AdminScoreEntryStatic = () => {
 
               {currentBall.isWicket && (
                 <Grid item xs={12}>
-                  <FormControl fullWidth>
+                  <FormControl fullWidth size="small">
                     <InputLabel>Dismissal Type</InputLabel>
                     <Select
                       value={currentBall.dismissalType}
@@ -506,7 +557,7 @@ const AdminScoreEntryStatic = () => {
               {/* Fielder Selection - shown for caught, run_out, stumped */}
               {currentBall.isWicket && ['caught', 'run_out', 'stumped'].includes(currentBall.dismissalType) && (
                 <Grid item xs={12}>
-                  <FormControl fullWidth>
+                  <FormControl fullWidth size="small">
                     <InputLabel>Fielder *</InputLabel>
                     <Select
                       value={currentBall.fielderId}
@@ -540,6 +591,7 @@ const AdminScoreEntryStatic = () => {
                   onChange={(e) => setCurrentBall({ ...currentBall, commentary: e.target.value })}
                   placeholder="e.g., 'Beautiful cover drive for four!' or 'Edged and caught behind!'"
                   helperText="Add description for this ball (shown in commentary section)"
+                  size="small"
                 />
               </Grid>
 
@@ -665,7 +717,7 @@ const AdminScoreEntryStatic = () => {
           </Paper>
         </Grid>
       </Grid>
-    </Container>
+    </AdminLayout>
   );
 };
 

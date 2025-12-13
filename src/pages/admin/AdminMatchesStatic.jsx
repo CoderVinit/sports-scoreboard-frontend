@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Paper, Typography, Box, Table, TableBody, TableCell,
+import { Paper, Typography, Box, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Button, Chip, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem,
   Grid, Snackbar, Alert
@@ -9,6 +9,7 @@ import { matchService, teamService } from '../../api/services';
 import EditIcon from '@mui/icons-material/Edit';
 import ScoreboardIcon from '@mui/icons-material/Scoreboard';
 import AddIcon from '@mui/icons-material/Add';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 const AdminMatchesStatic = () => {
   const [matches, setMatches] = useState([]);
@@ -174,7 +175,10 @@ const AdminMatchesStatic = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <AdminLayout
+      title="Matches"
+      subtitle="Create and maintain fixtures for the tournament."
+    >
       <Snackbar 
         open={snackbar.open} 
         autoHideDuration={3000} 
@@ -198,17 +202,22 @@ const AdminMatchesStatic = () => {
         </Box>
       </Paper>
 
-      {/* Create Match Dialog */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Create New Match</DialogTitle>
+      {/* Create / Edit Match Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+        <DialogTitle>{editMode ? 'Edit Match' : 'Create New Match'}</DialogTitle>
         <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Configure the basic details, venue, schedule and optional toss for this match.
+          </Typography>
+          <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
                 select
                 fullWidth
                 label="Team 1"
                 value={newMatch.team1Id}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewMatch({ ...newMatch, team1Id: e.target.value })}
               >
                 {teams.map((team) => (
@@ -224,6 +233,8 @@ const AdminMatchesStatic = () => {
                 fullWidth
                 label="Team 2"
                 value={newMatch.team2Id}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewMatch({ ...newMatch, team2Id: e.target.value })}
               >
                 {teams.map((team) => (
@@ -239,6 +250,8 @@ const AdminMatchesStatic = () => {
                 fullWidth
                 label="Match Format"
                 value={newMatch.matchFormat}
+                margin="dense"
+                size="small"
                 onChange={(e) => handleMatchFormatChange(e.target.value)}
               >
                 <MenuItem value="T20">T20</MenuItem>
@@ -254,6 +267,8 @@ const AdminMatchesStatic = () => {
                 type="number"
                 label="Total Overs"
                 value={newMatch.totalOvers}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewMatch({ ...newMatch, totalOvers: parseInt(e.target.value) })}
               />
             </Grid>
@@ -262,6 +277,8 @@ const AdminMatchesStatic = () => {
                 fullWidth
                 label="Venue"
                 value={newMatch.venue}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewMatch({ ...newMatch, venue: e.target.value })}
               />
             </Grid>
@@ -270,6 +287,8 @@ const AdminMatchesStatic = () => {
                 fullWidth
                 label="City"
                 value={newMatch.city}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewMatch({ ...newMatch, city: e.target.value })}
               />
             </Grid>
@@ -281,6 +300,8 @@ const AdminMatchesStatic = () => {
                 value={newMatch.matchDate}
                 onChange={(e) => setNewMatch({ ...newMatch, matchDate: e.target.value })}
                 InputLabelProps={{ shrink: true }}
+                margin="dense"
+                size="small"
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -288,6 +309,8 @@ const AdminMatchesStatic = () => {
                 fullWidth
                 label="Series"
                 value={newMatch.series}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewMatch({ ...newMatch, series: e.target.value })}
               />
             </Grid>
@@ -297,7 +320,10 @@ const AdminMatchesStatic = () => {
                 fullWidth
                 label="Toss Winner (Optional)"
                 value={newMatch.tossWinnerId}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewMatch({ ...newMatch, tossWinnerId: e.target.value })}
+                helperText="Leave blank if toss is not yet decided."
               >
                 <MenuItem value="">None (Not selected)</MenuItem>
                 {teams.filter(t => t.id === newMatch.team1Id || t.id === newMatch.team2Id).map((team) => (
@@ -315,6 +341,8 @@ const AdminMatchesStatic = () => {
                 value={newMatch.tossDecision}
                 onChange={(e) => setNewMatch({ ...newMatch, tossDecision: e.target.value })}
                 disabled={!newMatch.tossWinnerId}
+                margin="dense"
+                size="small"
               >
                 <MenuItem value="">None</MenuItem>
                 <MenuItem value="bat">Bat</MenuItem>
@@ -324,7 +352,9 @@ const AdminMatchesStatic = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleCloseDialog} color="inherit">
+            Cancel
+          </Button>
           <Button 
             onClick={handleSubmit} 
             variant="contained" 
@@ -411,7 +441,7 @@ const AdminMatchesStatic = () => {
           </TableBody>
         </Table>
       </TableContainer>
-    </Container>
+    </AdminLayout>
   );
 };
 

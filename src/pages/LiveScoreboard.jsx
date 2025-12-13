@@ -39,8 +39,7 @@ const LiveScoreboard = () => {
     };
 
     fetchLiveMatches();
-    const interval = setInterval(fetchLiveMatches, 30000);
-    return () => clearInterval(interval);
+    // Removed polling mechanism to align with no-polling requirement
   }, []);
 
   if (loading) {

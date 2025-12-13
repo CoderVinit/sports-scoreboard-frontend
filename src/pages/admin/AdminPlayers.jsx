@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  Container, Paper, Typography, Box, Button, Table, TableBody, TableCell,
+  Paper, Typography, Box, Button, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Dialog, DialogTitle, DialogContent,
   DialogActions, TextField, Grid, MenuItem, Chip, Snackbar, Alert, Avatar,
   IconButton, Tooltip
@@ -10,6 +10,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import playerService from '../../api/services/playerService';
 import teamService from '../../api/services/teamService';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 const AdminPlayers = () => {
   const [players, setPlayers] = useState([]);
@@ -154,7 +155,10 @@ const AdminPlayers = () => {
     : players;
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <AdminLayout
+      title="Players"
+      subtitle="Maintain player profiles used in scorecards and statistics."
+    >
       <Snackbar 
         open={snackbar.open} 
         autoHideDuration={3000} 
@@ -284,12 +288,17 @@ const AdminPlayers = () => {
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>{editMode ? 'Edit Player' : 'Add New Player'}</DialogTitle>
         <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Capture the player profile exactly as it should appear in match scorecards.
+          </Typography>
+          <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Player Name"
                 value={newPlayer.name}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewPlayer({ ...newPlayer, name: e.target.value })}
                 required
               />
@@ -300,6 +309,8 @@ const AdminPlayers = () => {
                 fullWidth
                 label="Team"
                 value={newPlayer.teamId}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewPlayer({ ...newPlayer, teamId: e.target.value })}
                 required
               >
@@ -316,6 +327,8 @@ const AdminPlayers = () => {
                 type="number"
                 label="Jersey Number"
                 value={newPlayer.jerseyNumber}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewPlayer({ ...newPlayer, jerseyNumber: e.target.value })}
               />
             </Grid>
@@ -325,6 +338,8 @@ const AdminPlayers = () => {
                 fullWidth
                 label="Role"
                 value={newPlayer.role}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewPlayer({ ...newPlayer, role: e.target.value })}
                 required
               >
@@ -340,6 +355,8 @@ const AdminPlayers = () => {
                 fullWidth
                 label="Batting Style"
                 value={newPlayer.battingStyle}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewPlayer({ ...newPlayer, battingStyle: e.target.value })}
               >
                 <MenuItem value="">None</MenuItem>
@@ -353,6 +370,8 @@ const AdminPlayers = () => {
                 fullWidth
                 label="Bowling Style"
                 value={newPlayer.bowlingStyle}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewPlayer({ ...newPlayer, bowlingStyle: e.target.value })}
               >
                 <MenuItem value="">None</MenuItem>
@@ -372,6 +391,8 @@ const AdminPlayers = () => {
                 type="date"
                 label="Date of Birth"
                 value={newPlayer.dateOfBirth}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewPlayer({ ...newPlayer, dateOfBirth: e.target.value })}
                 InputLabelProps={{ shrink: true }}
               />
@@ -381,6 +402,8 @@ const AdminPlayers = () => {
                 fullWidth
                 label="Nationality"
                 value={newPlayer.nationality}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewPlayer({ ...newPlayer, nationality: e.target.value })}
               />
             </Grid>
@@ -389,6 +412,9 @@ const AdminPlayers = () => {
                 fullWidth
                 label="Photo URL"
                 value={newPlayer.photo}
+                margin="dense"
+                size="small"
+                type="url"
                 onChange={(e) => setNewPlayer({ ...newPlayer, photo: e.target.value })}
               />
             </Grid>
@@ -405,7 +431,7 @@ const AdminPlayers = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </AdminLayout>
   );
 };
 
