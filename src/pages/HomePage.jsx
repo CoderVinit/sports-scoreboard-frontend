@@ -639,6 +639,11 @@ const HomePage = () => {
                   ? match.team2
                   : null;
 
+              const team1 = match.team1;
+              const team2 = match.team2;
+              const team1Innings = inningsList.find((inn) => inn.battingTeamId === match.team1Id) || firstInnings;
+              const team2Innings = inningsList.find((inn) => inn.battingTeamId === match.team2Id) || secondInnings;
+
               let resultText = '';
               if (winnerTeam && match.winMargin) {
                 resultText = `${winnerTeam.shortName || winnerTeam.name} won by ${match.winMargin}`;
@@ -699,25 +704,89 @@ const HomePage = () => {
                           sx={{ fontWeight: 600, fontSize: '0.75rem', height: 26 }}
                         />
                       </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          Final Scores
+                        </Typography>
+                      </Box>
 
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        {match.team1?.shortName || match.team1?.name} vs {match.team2?.shortName || match.team2?.name}
-                      </Typography>
-                      {firstInnings && (
-                        <Typography variant="h6" fontWeight={700} sx={{ mb: 0.5 }}>
-                          {firstInnings.totalRuns || 0}/{firstInnings.totalWickets || 0} ({firstInnings.totalOvers || '0.0'}/{totalOvers} ov)
+                      {/* Team 1 row */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                          <Avatar
+                            sx={{
+                              width: 32,
+                              height: 32,
+                              background: '#1976d2',
+                              fontSize: '0.875rem',
+                              fontWeight: 700,
+                              color: 'white'
+                            }}
+                          >
+                            {(team1?.shortName || team1?.name || 'T1').charAt(0)}
+                          </Avatar>
+                          <Typography
+                            variant="body2"
+                            fontWeight={winnerTeam && winnerTeam.id === team1?.id ? 700 : 500}
+                            sx={{ color: winnerTeam && winnerTeam.id === team1?.id ? 'text.primary' : 'text.secondary' }}
+                          >
+                            {team1?.shortName || team1?.name}
+                          </Typography>
+                        </Box>
+                        <Typography
+                          variant="body2"
+                          fontWeight={600}
+                          sx={{ color: 'text.primary' }}
+                        >
+                          {team1Innings
+                            ? `${team1Innings.totalRuns || 0}/${team1Innings.totalWickets || 0} (${team1Innings.totalOvers || '0.0'}/${totalOvers} ov)`
+                            : 'DNB'}
                         </Typography>
-                      )}
-                      {secondInnings && (
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          2nd innings: {secondInnings.totalRuns || 0}/{secondInnings.totalWickets || 0} ({secondInnings.totalOvers || '0.0'} ov)
+                      </Box>
+
+                      {/* Team 2 row */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                          <Avatar
+                            sx={{
+                              width: 32,
+                              height: 32,
+                              background: '#9e9e9e',
+                              fontSize: '0.875rem',
+                              fontWeight: 700,
+                              color: 'white'
+                            }}
+                          >
+                            {(team2?.shortName || team2?.name || 'T2').charAt(0)}
+                          </Avatar>
+                          <Typography
+                            variant="body2"
+                            fontWeight={winnerTeam && winnerTeam.id === team2?.id ? 700 : 500}
+                            sx={{ color: winnerTeam && winnerTeam.id === team2?.id ? 'text.primary' : 'text.secondary' }}
+                          >
+                            {team2?.shortName || team2?.name}
+                          </Typography>
+                        </Box>
+                        <Typography
+                          variant="body2"
+                          fontWeight={600}
+                          sx={{ color: 'text.primary' }}
+                        >
+                          {team2Innings
+                            ? `${team2Innings.totalRuns || 0}/${team2Innings.totalWickets || 0} (${team2Innings.totalOvers || '0.0'} ov)`
+                            : 'DNB'}
                         </Typography>
-                      )}
+                      </Box>
 
                       {resultText && (
-                        <Typography variant="body2" sx={{ mt: 1 }} fontWeight={600}>
-                          Result: <span style={{ color: '#1976d2' }}>{resultText}</span>
-                        </Typography>
+                        <Box sx={{ mt: 1.5 }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                            Result
+                          </Typography>
+                          <Typography variant="body2" fontWeight={600} sx={{ mt: 0.25 }}>
+                            <span style={{ color: '#1976d2' }}>{resultText}</span>
+                          </Typography>
+                        </Box>
                       )}
                     </CardContent>
                   </Card>
