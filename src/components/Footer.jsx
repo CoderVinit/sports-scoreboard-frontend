@@ -1,30 +1,16 @@
-import { Box, Container, Typography, Link } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <Box
-      component="footer"
-      sx={{
-        py: 3,
-        px: 2,
-        mt: 'auto',
-        backgroundColor: (theme) =>
-          theme.palette.mode === 'light'
-            ? theme.palette.grey[200]
-            : theme.palette.grey[800],
-      }}
-    >
-      <Container maxWidth="sm">
-        <Typography variant="body2" color="text.secondary" align="center">
-          {'Copyright © '}
-          <Link color="inherit" href="/">
-            Sports Scoreboard
-          </Link>{' '}
-          {new Date().getFullYear()}
-          {'.'}
-        </Typography>
-      </Container>
-    </Box>
+    <footer className="mt-auto border-t bg-muted/50">
+      <div className="container mx-auto px-4 py-6">
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground">
+            Copyright © <Link to="/" className="hover:underline font-medium">Sports Scoreboard</Link> {new Date().getFullYear()}.
+          </p>
+        </div>
+      </div>
+    </footer>
   );
 };
 

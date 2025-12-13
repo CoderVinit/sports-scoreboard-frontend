@@ -1,13 +1,12 @@
-import { Container, Box, Grid, Paper, Typography, Chip, Divider, LinearProgress, CircularProgress, Avatar } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import LiveTvIcon from '@mui/icons-material/LiveTv';
-import SportsIcon from '@mui/icons-material/Sports';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { matchService, inningsService } from '../api/services';
 import { getSocket } from '../utils/socket';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Progress } from '@/components/ui/progress';
+import { Radio, MapPin, Calendar, TrendingUp, Trophy } from 'lucide-react';
 
 const LiveScoreboard = () => {
   const [liveMatches, setLiveMatches] = useState([]);
@@ -53,108 +52,57 @@ const LiveScoreboard = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-          <CircularProgress />
-        </Box>
-      </Container>
+      <div className="container mx-auto py-8">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ textAlign: 'center' }}>
-          <Typography color="error" variant="h6">
+      <div className="container mx-auto py-8">
+        <div className="text-center">
+          <p className="text-lg text-destructive font-semibold">
             {typeof error === 'string' ? error : error?.message || 'An error occurred'}
-          </Typography>
-        </Box>
-      </Container>
+          </p>
+        </div>
+      </div>
     );
   }
 
   if (liveMatches.length === 0) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <LiveTvIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
-          <Typography variant="h5" color="text.secondary">
-            No live matches at the moment
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-            Check back later for live cricket action!
-          </Typography>
-        </Box>
-      </Container>
+      <div className="container mx-auto py-8">
+        <div className="text-center py-16">
+          <Radio className="w-20 h-20 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-semibold text-gray-600 mb-2">No live matches at the moment</h2>
+          <p className="text-gray-500">Check back later for live cricket action!</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ 
-      minHeight: '100vh',
-      background: '#f5f7fa',
-      pb: 4
-    }}>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50 pb-8">
+      <div className="w-full py-8 px-6">
         {/* Page Header */}
-        <Paper 
-          elevation={0}
-          sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            mb: 4,
-            p: 3,
-            background: 'white',
-            borderRadius: 2,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-          }}
-        >
-          <LiveTvIcon sx={{ fontSize: 32, mr: 2, color: '#d32f2f' }} />
-          <Box sx={{ flex: 1 }}>
-            <Typography 
-              variant="h5" 
-              component="h1" 
-              fontWeight={700} 
-              sx={{ 
-                fontSize: { xs: '1.5rem', md: '1.75rem' },
-                mb: 0.5,
-                letterSpacing: '-0.01em'
-              }}
-            >
-              Live Cricket Matches
-            </Typography>
-            <Typography 
-              variant="body2" 
-              color="text.secondary"
-              fontWeight={500}
-            >
-              {liveMatches.length} {liveMatches.length === 1 ? 'match' : 'matches'} in progress
-            </Typography>
-          </Box>
-        </Paper>
+        <Card className="mb-8 bg-white shadow-lg">
+          <CardHeader className="flex flex-row items-center space-y-0 pb-4">
+            <div className="p-2 bg-red-100 rounded-lg mr-4">
+              <Radio className="w-8 h-8 text-red-600" />
+            </div>
+            <div className="flex-1">
+              <CardTitle className="text-3xl font-bold mb-1">Live Cricket Matches</CardTitle>
+              <p className="text-sm text-gray-600 font-medium">
+                {liveMatches.length} {liveMatches.length === 1 ? 'match' : 'matches'} in progress
+              </p>
+            </div>
+          </CardHeader>
+        </Card>
 
-      {liveMatches && liveMatches.length === 0 && (
-        <Paper 
-          elevation={0}
-          sx={{ 
-            p: 6, 
-            textAlign: 'center', 
-            bgcolor: 'white',
-            borderRadius: 3,
-            border: '1px solid rgba(0,0,0,0.08)'
-          }}
-        >
-          <SportsIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
-          <Typography variant="h5" color="text.secondary" gutterBottom fontWeight={600}>
-            No live matches at the moment
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Check back soon for live cricket action!
-          </Typography>
-        </Paper>
-      )}
-
-      <Grid container spacing={3}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {liveMatches && liveMatches.map((match) => {
           const totalOvers = match.totalOvers || (match.matchFormat === 'T20' ? 20 : match.matchFormat === 'ODI' ? 50 : 90);
           const inningsList = match.innings || [];
@@ -211,309 +159,147 @@ const LiveScoreboard = () => {
           }
           
           return (
-            <Grid item xs={12} md={6} key={match.id}>
-              <Paper 
-                component={Link} 
-                to={`/match/${match.id}`}
-                elevation={0}
-                sx={{ 
-                  position: 'relative',
-                  textDecoration: 'none',
-                  borderRadius: 2,
-                  background: 'white',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  border: '1px solid #e0e0e0',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  '&:hover': {
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                    borderColor: '#1976d2',
-                    transform: 'translateY(-2px)',
-                  }
-                }}
-              >
+            <Link to={`/match/${match.id}`} key={match.id} className="block">
+              <Card className="group h-full bg-white hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-2 border-transparent hover:border-blue-500 relative overflow-hidden">
                 {/* Live Badge */}
-                <Box sx={{ position: 'absolute', top: 16, right: 16, zIndex: 1 }}>
-                  <Chip 
-                    label="LIVE" 
-                    color="error" 
-                    size="small" 
-                    icon={<LiveTvIcon sx={{ fontSize: 14 }} />}
-                    sx={{ 
-                      fontWeight: 700,
-                      fontSize: '0.75rem',
-                      height: 26,
-                      boxShadow: '0 2px 4px rgba(211, 47, 47, 0.2)'
-                    }}
-                  />
-                </Box>
+                <Badge variant="destructive" className="absolute top-4 right-4 z-10 animate-pulse shadow-lg">
+                  <Radio className="w-3 h-3 mr-1" />
+                  LIVE
+                </Badge>
 
                 {/* Match Info Header */}
-                <Box sx={{ 
-                  p: 2.5, 
-                  bgcolor: '#fafafa',
-                  borderBottom: '1px solid #e0e0e0'
-                }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-                    <Chip 
-                      icon={<SportsIcon sx={{ fontSize: 14 }} />} 
-                      label={match.matchFormat || match.matchType} 
-                      size="small" 
-                      color="primary"
-                      sx={{ 
-                        fontWeight: 600,
-                        fontSize: '0.75rem',
-                        height: 26,
-                        px: 1
-                      }}
-                    />
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <LocationOnIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                      <Typography variant="body2" color="text.secondary" fontSize="0.875rem" fontWeight={500}>
-                        {match.venue}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <CalendarTodayIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                      <Typography variant="body2" color="text.secondary" fontSize="0.875rem" fontWeight={500}>
+                <CardHeader className="pb-3 bg-gradient-to-r from-slate-50 to-blue-50 border-b">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <Badge className="bg-blue-600 hover:bg-blue-700">
+                      <Trophy className="w-3 h-3 mr-1" />
+                      {match.matchFormat || match.matchType}
+                    </Badge>
+                    <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                      <MapPin className="w-4 h-4" />
+                      <span className="font-medium">{match.venue}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                      <Calendar className="w-4 h-4" />
+                      <span className="font-medium">
                         {new Date(match.matchDate).toLocaleDateString('en-US', { 
                           weekday: 'long',
                           month: 'short', 
                           day: 'numeric', 
                           year: 'numeric' 
                         })}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
+                      </span>
+                    </div>
+                  </div>
+                </CardHeader>
 
                 {/* Teams and Scores */}
-                <Box sx={{ p: 3, flexGrow: 1 }}>
+                <CardContent className="pt-4 space-y-4">
                   {/* Batting Team */}
-                  <Box sx={{ mb: 2 }}>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center', 
-                      p: 2.5,
-                      borderRadius: 1.5,
-                      background: '#1976d2',
-                      color: 'white',
-                      boxShadow: '0 2px 8px rgba(25, 118, 210, 0.2)'
-                    }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1 }}>
-                        <Avatar 
-                          src={battingTeam?.logo} 
-                          alt={battingTeam?.name}
-                          sx={{ 
-                            width: 44, 
-                            height: 44,
-                            background: 'rgba(255,255,255,0.25)',
-                            fontSize: '1.125rem',
-                            fontWeight: 700,
-                            border: '2px solid rgba(255,255,255,0.3)'
-                          }}
-                        >
-                          {battingTeam?.shortName?.charAt(0) || battingTeam?.name?.charAt(0) || 'T'}
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 rounded-xl text-white shadow-lg">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-11 w-11 border-2 border-white/30 bg-white/20">
+                          <AvatarFallback className="bg-transparent text-white font-bold text-lg">
+                            {battingTeam?.shortName?.charAt(0) || battingTeam?.name?.charAt(0) || 'T'}
+                          </AvatarFallback>
                         </Avatar>
-                        <Box>
-                          <Typography 
-                            variant="h6" 
-                            fontWeight={700} 
-                            sx={{ 
-                              color: 'white',
-                              mb: 0.5,
-                              fontSize: '1.0625rem',
-                              lineHeight: 1.3
-                            }}
-                          >
+                        <div>
+                          <h3 className="font-bold text-lg leading-tight">
                             {battingTeam?.shortName || battingTeam?.name || 'Team'}
-                          </Typography>
-                          <Chip 
-                            label="Batting" 
-                            size="small" 
-                            sx={{ 
-                              height: 22,
-                              fontSize: '0.6875rem',
-                              fontWeight: 600,
-                              background: 'rgba(255,255,255,0.25)',
-                              color: 'white',
-                              border: '1px solid rgba(255,255,255,0.2)'
-                            }} 
-                          />
-                        </Box>
-                      </Box>
-                      <Box sx={{ textAlign: 'right' }}>
-                        <Typography 
-                          variant="h4" 
-                          fontWeight={800} 
-                          sx={{
-                            color: 'white',
-                            fontSize: { xs: '1.625rem', md: '1.875rem' },
-                            lineHeight: 1,
-                            mb: 0.5
-                          }}
-                        >
+                          </h3>
+                          <Badge variant="secondary" className="mt-1 bg-white/20 text-white border-white/20 hover:bg-white/30 text-xs">
+                            Batting
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-4xl font-extrabold leading-none">
                           {`${battingScore.totalRuns || 0}/${battingScore.totalWickets || 0}`}
-                        </Typography>
-                        <Typography 
-                          variant="body2" 
-                          sx={{ 
-                            color: 'rgba(255,255,255,0.95)',
-                            fontSize: '0.8125rem',
-                            fontWeight: 500
-                          }}
-                        >
+                        </div>
+                        <div className="text-sm font-medium text-blue-100 mt-1">
                           ({battingScore.totalOvers || '0.0'}/{totalOvers} ov)
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-                  <Divider sx={{ my: 2 }} />
+                  <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
 
                   {/* Bowling Team */}
-                  <Box>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      p: 2.5,
-                      borderRadius: 1.5,
-                      background: '#fafafa',
-                      border: '1px solid #e0e0e0'
-                    }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1 }}>
-                        <Avatar 
-                          src={bowlingTeam?.logo} 
-                          alt={bowlingTeam?.name}
-                          sx={{ 
-                            width: 44, 
-                            height: 44,
-                            background: '#9e9e9e',
-                            fontSize: '1.125rem',
-                            fontWeight: 700
-                          }}
-                        >
-                          {bowlingTeam?.shortName?.charAt(0) || bowlingTeam?.name?.charAt(0) || 'T'}
+                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-11 w-11 bg-slate-400">
+                          <AvatarFallback className="text-white font-bold text-lg">
+                            {bowlingTeam?.shortName?.charAt(0) || bowlingTeam?.name?.charAt(0) || 'T'}
+                          </AvatarFallback>
                         </Avatar>
-                        <Typography 
-                          variant="h6" 
-                          fontWeight={700} 
-                          sx={{ 
-                            color: 'text.primary',
-                            fontSize: '1.0625rem',
-                            lineHeight: 1.3
-                          }}
-                        >
+                        <h3 className="font-bold text-lg text-gray-900">
                           {bowlingTeam?.shortName || bowlingTeam?.name || 'Team'}
-                        </Typography>
-                      </Box>
-                      <Typography 
-                        variant="body1" 
-                        sx={{ 
-                          color: 'text.secondary',
-                          fontWeight: 700,
-                          fontSize: '0.9375rem'
-                        }}
-                      >
+                        </h3>
+                      </div>
+                      <div className="text-lg font-bold text-gray-600">
                         {bowlingScore.totalRuns > 0 ? 
                           `${bowlingScore.totalRuns || 0}/${bowlingScore.totalWickets || 0}` : 
                           'Yet to bat'
                         }
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
 
-                <Divider />
+                <div className="h-px bg-gray-200"></div>
 
                 {/* Match Progress and Stats */}
-                <Box sx={{ 
-                  p: 3, 
-                  bgcolor: '#fafafa',
-                  borderTop: '1px solid #e0e0e0'
-                }}>
+                <CardContent className="pt-4 pb-4 bg-slate-50 border-t space-y-4">
                   {!isCompletedByInnings && (
-                    <Box sx={{ mb: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="body2" color="text.secondary" fontWeight={600} fontSize="0.875rem">
-                          Match Progress
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" fontSize="0.875rem" fontWeight={500}>
+                    <div>
+                      <div className="flex justify-between items-center mb-2 text-sm">
+                        <span className="font-semibold text-gray-600">Match Progress</span>
+                        <span className="text-gray-500 font-medium">
                           {currentOvers.toFixed(1)}/{totalOvers} overs
-                        </Typography>
-                      </Box>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={progress} 
-                        sx={{ 
-                          height: 8, 
-                          borderRadius: 2,
-                          bgcolor: '#e0e0e0',
-                          '& .MuiLinearProgress-bar': {
-                            background: '#1976d2',
-                            borderRadius: 2
-                          }
-                        }} 
-                      />
-                    </Box>
+                        </span>
+                      </div>
+                      <Progress value={progress} className="h-2" />
+                    </div>
                   )}
                   
                   {/* Match Stats */}
-                  <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: 1.5
-                  }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-2">
                       {isCompletedByInnings && resultText ? (
-                        <Typography variant="body2" color="text.secondary" fontSize="0.875rem" fontWeight={600}>
-                          Result: <strong style={{ color: '#1976d2', fontWeight: 700 }}>{resultText}</strong>
-                        </Typography>
+                        <p className="text-sm font-medium text-gray-600">
+                          Result: <span className="text-blue-600 font-bold">{resultText}</span>
+                        </p>
                       ) : (
                         <>
-                          <TrendingUpIcon sx={{ fontSize: 18, color: '#4caf50' }} />
-                          <Typography variant="body2" color="text.secondary" fontSize="0.875rem" fontWeight={500}>
-                            CRR: <strong style={{ color: '#1976d2', fontWeight: 700 }}>{getRunRate(battingScore.totalRuns || 0, currentOvers)}</strong>
-                          </Typography>
+                          <TrendingUp className="w-4 h-4 text-green-600" />
+                          <p className="text-sm font-medium text-gray-600">
+                            CRR: <span className="text-blue-600 font-bold">{getRunRate(battingScore.totalRuns || 0, currentOvers)}</span>
+                          </p>
                         </>
                       )}
-                    </Box>
-                    <Chip 
-                      label={isCompletedByInnings ? 'Completed' : 'Match in progress'} 
-                      size="small" 
-                      color={isCompletedByInnings ? 'default' : 'success'} 
-                      sx={{ 
-                        height: 24,
-                        fontWeight: 600,
-                        fontSize: '0.75rem'
-                      }}
-                    />
-                  </Box>
+                    </div>
+                    <Badge variant={isCompletedByInnings ? 'secondary' : 'default'} className={!isCompletedByInnings && 'bg-green-100 text-green-800 hover:bg-green-200'}>
+                      {isCompletedByInnings ? 'Completed' : 'Match in progress'}
+                    </Badge>
+                  </div>
                   
                   {match.tossWinner && (
-                    <Box sx={{ 
-                      mt: 2, 
-                      pt: 2,
-                      borderTop: '1px solid #e0e0e0'
-                    }}>
-                      <Typography variant="body2" fontWeight={500} color="text.primary" fontSize="0.875rem" sx={{ lineHeight: 1.5 }}>
+                    <div className="pt-3 border-t border-slate-200">
+                      <p className="text-sm font-medium text-gray-700 leading-relaxed">
                         {match.tossWinner} won the toss and chose to {match.tossDecision || 'bat'}
-                      </Typography>
-                    </Box>
+                      </p>
+                    </div>
                   )}
-                </Box>
-              </Paper>
-            </Grid>
+                </CardContent>
+              </Card>
+            </Link>
           );
         })}
-      </Grid>
-      </Container>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 };
 

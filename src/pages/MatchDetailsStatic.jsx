@@ -8,7 +8,7 @@ import SportsCricketIcon from '@mui/icons-material/SportsCricket';
 import LiveTvIcon from '@mui/icons-material/LiveTv';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import { matchService } from '../api/services';
+import { matchService, playerService } from '../api/services';
 import { getSocket } from '../utils/socket';
 
 // Helper function to convert hex to rgba
@@ -157,6 +157,8 @@ const MatchDetails = () => {
   const [match, setMatch] = useState(null);
   const [statistics, setStatistics] = useState(null);
   const [commentary, setCommentary] = useState([]);
+  const [team1Squad, setTeam1Squad] = useState([]);
+  const [team2Squad, setTeam2Squad] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -171,9 +173,30 @@ const MatchDetails = () => {
         
         console.log('Commentary data:', commentaryData); // Debug log
         
-        setMatch(matchData.data || matchData.match);
-        setStatistics(statsData.data || statsData);
+        const matchInfo = matchData.data || matchData.match;
+        const stats = statsData.data || statsData;
+        
+        console.log('Match Info:', matchInfo);
+        console.log('Statistics:', stats);
+        console.log('Current Innings:', matchInfo?.innings);
+        
+        setMatch(matchInfo);
+        setStatistics(stats);
         setCommentary(commentaryData.data || commentaryData.commentary || []);
+        
+        // Fetch squads for both teams
+        if (matchInfo?.team1Id && matchInfo?.team2Id) {
+          try {
+            const [team1Players, team2Players] = await Promise.all([
+              playerService.getPlayersByTeam(matchInfo.team1Id),
+              playerService.getPlayersByTeam(matchInfo.team2Id)
+            ]);
+            setTeam1Squad(team1Players.data || team1Players.players || []);
+            setTeam2Squad(team2Players.data || team2Players.players || []);
+          } catch (error) {
+            console.error('Error fetching squad data:', error);
+          }
+        }
       } catch (error) {
         console.error('Error fetching match data:', error);
       } finally {
@@ -187,11 +210,29 @@ const MatchDetails = () => {
     // Socket.IO real-time updates
     const socket = getSocket();
     
-    socket.on('ballRecorded', (data) => {
+    socket.on('ballRecorded', async (data) => {
       if (data.matchId === parseInt(matchId)) {
-        console.log('Ball recorded - updating data in real-time');
+        console.log('Ball recorded - updating data in real-time', data);
         // Refresh all data when a new ball is recorded
-        fetchMatchData();
+        try {
+          const [matchData, statsData, commentaryData] = await Promise.all([
+            matchService.getMatchDetails(matchId),
+            matchService.getMatchStatistics(matchId),
+            matchService.getMatchCommentary(matchId)
+          ]);
+          
+          const matchInfo = matchData.data || matchData.match;
+          const stats = statsData.data || statsData;
+          
+          console.log('Updated after ball - Match:', matchInfo);
+          console.log('Updated after ball - Statistics:', stats);
+          
+          setMatch(matchInfo);
+          setStatistics(stats);
+          setCommentary(commentaryData.data || commentaryData.commentary || []);
+        } catch (error) {
+          console.error('Error updating data after ball:', error);
+        }
       }
     });
 
@@ -290,218 +331,209 @@ const MatchDetails = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Match Header */}
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          p: { xs: 3, md: 4 }, 
-          mb: 4, 
-          bgcolor: '#1976d2', 
-          color: 'white',
-          borderRadius: 2,
-          boxShadow: '0 4px 12px rgba(25, 118, 210, 0.15)'
-        }}
-      >
-        {/* Header Info */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4, flexWrap: 'wrap', gap: 2 }}>
-          <Box sx={{ flex: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5, flexWrap: 'wrap' }}>
-              <Chip 
-                label={match.matchFormat || match.matchType}
-                size="small"
-                sx={{
-                  bgcolor: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  fontWeight: 600,
-                  fontSize: '0.8125rem',
-                  height: 28
-                }}
-              />
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                <LocationOnIcon sx={{ fontSize: 18, opacity: 0.9 }} />
-                <Typography variant="body1" sx={{ opacity: 0.95, fontWeight: 500, fontSize: '0.9375rem' }}>
-                  {match.venue}
+    <Container maxWidth={false} sx={{ py: 0, px: 0 }}>
+      {/* Match Header - New Design */}
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        background: 'linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%)' 
+      }}>
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            p: { xs: 3, md: 4 }, 
+            mb: 4, 
+            background: 'linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%)',
+            color: 'white',
+            borderRadius: 0,
+            position: 'relative',
+            overflow: 'hidden',
+            maxWidth: '1400px',
+            width: '100%',
+            boxShadow: 'none'
+          }}
+        >
+        {/* Top Info Bar */}
+        <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <Typography variant="body1" sx={{ fontWeight: 600, mb: 1, fontSize: '0.95rem' }}>
+            {new Date(match.matchDate || match.date).toLocaleDateString('en-US', { 
+              weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+            }) + ', ' + new Date(match.matchDate || match.date).toLocaleTimeString('en-US', { 
+              hour: '2-digit', minute: '2-digit', hour12: false
+            })}
+          </Typography>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, fontSize: '1.1rem' }}>
+            {match.matchFormat || match.matchType} Match
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+            <LocationOnIcon sx={{ fontSize: 16 }} />
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              {match.venue}
+            </Typography>
+            <Typography variant="body2" sx={{ ml: 1, opacity: 0.8 }}>
+              ☀️ 23°
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* LIVE Badge */}
+        {match.status === 'live' && (
+          <Chip 
+            label="LIVE" 
+            icon={<SportsCricketIcon sx={{ fontSize: 14 }} />}
+            sx={{ 
+              position: 'absolute',
+              left: 24,
+              top: 100,
+              bgcolor: '#e53935',
+              color: 'white',
+              fontWeight: 700,
+              fontSize: '0.75rem',
+              height: 26,
+              px: 1,
+              animation: 'pulse 2s ease-in-out infinite',
+              '@keyframes pulse': {
+                '0%, 100%': { opacity: 1 },
+                '50%': { opacity: 0.8 }
+              }
+            }}
+          />
+        )}
+
+        {/* Teams Score Section */}
+        <Box sx={{ mb: 3 }}>
+          {/* Second Innings (Current/Latest) - Show if exists */}
+          {secondInnings && secondInningsBattingTeam && (
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              py: 2,
+              borderBottom: '1px solid rgba(255,255,255,0.1)'
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  width: 40, 
+                  height: 28, 
+                  bgcolor: 'white', 
+                  borderRadius: 0.5, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  color: '#0a1f44'
+                }}>
+                  {(secondInningsBattingTeam.shortName || secondInningsBattingTeam.name || 'T').substring(0, 3).toUpperCase()}
+                </Box>
+                <Typography variant="h5" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: { xs: '1.25rem', md: '1.5rem' } }}>
+                  {secondInningsBattingTeam.name || secondInningsBattingTeam.shortName}
                 </Typography>
+                {match.status === 'live' && currentInningsNumber === 2 && (
+                  <SportsCricketIcon sx={{ fontSize: 20, ml: 1, cursor: 'pointer' }} />
+                )}
               </Box>
-            </Box>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-              <CalendarTodayIcon sx={{ fontSize: 18, opacity: 0.9 }} />
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: { xs: '1rem', md: '1.125rem' } }}>
-                {new Date(match.matchDate || match.date).toLocaleDateString('en-US', { 
-                  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-                })}
+              <Typography variant="h4" fontWeight={800} sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}>
+                {secondInnings.totalRuns ?? 0}/{secondInnings.totalWickets ?? 0}
+                <Typography component="span" variant="h6" sx={{ ml: 1, opacity: 0.8, fontWeight: 600, fontSize: { xs: '1rem', md: '1.25rem' } }}>
+                  ({secondInnings.totalOvers || '0.0'})
+                </Typography>
               </Typography>
             </Box>
-          </Box>
-          {match.status === 'live' && (
-            <Chip 
-              label="LIVE" 
-              color="error" 
-              icon={<LiveTvIcon sx={{ fontSize: 16 }} />}
-              sx={{ 
-                color: 'white', 
-                bgcolor: '#d32f2f',
-                fontWeight: 700,
-                fontSize: '0.8125rem',
-                height: 32,
-                boxShadow: '0 2px 4px rgba(211, 47, 47, 0.3)'
-              }}
-            />
+          )}
+
+          {/* First Innings */}
+          {firstInnings && firstInningsBattingTeam && (
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              py: 2
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  width: 40, 
+                  height: 28, 
+                  bgcolor: 'white', 
+                  borderRadius: 0.5, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  color: '#0a1f44'
+                }}>
+                  {(firstInningsBattingTeam.shortName || firstInningsBattingTeam.name || 'T').substring(0, 3).toUpperCase()}
+                </Box>
+                <Typography variant="h5" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: { xs: '1.25rem', md: '1.5rem' } }}>
+                  {firstInningsBattingTeam.name || firstInningsBattingTeam.shortName}
+                </Typography>
+                {match.status === 'live' && currentInningsNumber === 1 && !secondInnings && (
+                  <SportsCricketIcon sx={{ fontSize: 20, ml: 1, cursor: 'pointer' }} />
+                )}
+              </Box>
+              <Typography variant="h4" fontWeight={800} sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}>
+                {firstInnings.totalRuns || 0}/{firstInnings.totalWickets || 0}
+                <Typography component="span" variant="h6" sx={{ ml: 1, opacity: 0.8, fontWeight: 600, fontSize: { xs: '1rem', md: '1.25rem' } }}>
+                  ({firstInnings.totalOvers || '0.0'})
+                </Typography>
+              </Typography>
+            </Box>
           )}
         </Box>
 
-        {/* Score Display */}
-        <Grid container spacing={4}>
-          {/* Primary (current) innings - Batting Team */}
-          <Grid item xs={12} md={8}>
-            {primaryInnings && primaryBattingTeam && (() => {
-              const battingTeamColors = getTeamColors(primaryBattingTeam.name || primaryBattingTeam.shortName);
-              return (
-                <Box sx={{ 
-                  p: 4, 
-                  borderRadius: 2, 
-                  bgcolor: battingTeamColors.bgColor,
-                  border: `2px solid ${battingTeamColors.borderColor}`,
-                  backdropFilter: 'blur(10px)',
-                  background: `linear-gradient(135deg, ${battingTeamColors.bgColor} 0%, ${hexToRgba(battingTeamColors.primary, 0.15)} 100%)`,
-                  boxShadow: `0 4px 12px ${hexToRgba(battingTeamColors.primary, 0.25)}`
-                }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5, mb: 3 }}>
-                    <Avatar 
-                      src={primaryBattingTeam.logo} 
-                      alt={primaryBattingTeam.shortName || primaryBattingTeam.name}
-                      sx={{ 
-                        width: 64, 
-                        height: 64,
-                        bgcolor: battingTeamColors.primary,
-                        border: `3px solid ${battingTeamColors.accent || battingTeamColors.primary}`,
-                        color: 'white',
-                        fontWeight: 700,
-                        fontSize: '1.75rem'
-                      }}
-                    >
-                      {(primaryBattingTeam.shortName || primaryBattingTeam.name || 'T').charAt(0)}
-                    </Avatar>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="h5" fontWeight={700} sx={{ fontSize: { xs: '1.375rem', md: '1.625rem' }, mb: 0.75, color: 'white' }}>
-                        {primaryBattingTeam.shortName || primaryBattingTeam.name || 'Team'}
-                      </Typography>
-                      <Chip 
-                        label="Batting" 
-                        size="small"
-                        sx={{
-                          bgcolor: battingTeamColors.accent || battingTeamColors.primary,
-                          color: 'white',
-                          fontWeight: 600,
-                          fontSize: '0.8125rem',
-                          height: 26,
-                          border: `1px solid ${battingTeamColors.accent || battingTeamColors.primary}`
-                        }}
-                      />
-                    </Box>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 2.5, flexWrap: 'wrap', mb: 2 }}>
-                    <Typography variant="h2" fontWeight={800} sx={{ fontSize: { xs: '2.25rem', md: '3rem' }, lineHeight: 1, color: 'white' }}>
-                      {primaryInnings.totalRuns ?? 0}/{primaryInnings.totalWickets ?? 0}
-                    </Typography>
-                    <Typography variant="h5" sx={{ opacity: 0.95, fontWeight: 600, fontSize: { xs: '1.125rem', md: '1.375rem' }, color: 'white' }}>
-                      ({primaryInnings.totalOvers || '0.0'} ov)
-                    </Typography>
-                  </Box>
-                  {primaryInnings.target && (
-                    <Box sx={{ 
-                      mt: 2.5, 
-                      pt: 2.5, 
-                      borderTop: `1px solid ${hexToRgba(battingTeamColors.primary, 0.3)}`
-                    }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: battingTeamColors.accent || 'white', fontSize: { xs: '1rem', md: '1.125rem' } }}>
-                        Target: {primaryInnings.target}
-                      </Typography>
-                    </Box>
-                  )}
-                </Box>
-              );
-            })()}
-          </Grid>
-
-          {/* First innings summary - Smaller Card */}
-          <Grid item xs={12} md={4}>
-            {firstInnings && firstInningsBattingTeam && (() => {
-              const firstInningsColors = getTeamColors(firstInningsBattingTeam.name || firstInningsBattingTeam.shortName);
-              return (
-                <Box sx={{ 
-                  p: 2.5, 
-                  borderRadius: 2, 
-                  bgcolor: firstInningsColors.bgColor,
-                  border: `2px solid ${firstInningsColors.borderColor}`,
-                  backdropFilter: 'blur(10px)',
-                  background: `linear-gradient(135deg, ${firstInningsColors.bgColor} 0%, ${hexToRgba(firstInningsColors.primary, 0.15)} 100%)`,
-                  boxShadow: `0 4px 12px ${hexToRgba(firstInningsColors.primary, 0.25)}`,
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center'
-                }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                    <Avatar 
-                      src={firstInningsBattingTeam.logo} 
-                      alt={firstInningsBattingTeam.shortName || firstInningsBattingTeam.name}
-                      sx={{ 
-                        width: 48, 
-                        height: 48,
-                        bgcolor: firstInningsColors.primary,
-                        border: `2px solid ${firstInningsColors.accent || firstInningsColors.primary}`,
-                        color: 'white',
-                        fontWeight: 700,
-                        fontSize: '1.25rem'
-                      }}
-                    >
-                      {(firstInningsBattingTeam.shortName || firstInningsBattingTeam.name || 'T').charAt(0)}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1rem', md: '1.125rem' }, mb: 0.5, color: 'white' }}>
-                        {firstInningsBattingTeam.shortName || firstInningsBattingTeam.name || 'Team'}
-                      </Typography>
-                      <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 500, color: 'white', fontSize: '0.75rem' }}>
-                        1st Innings
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Box>
-                    <Typography variant="h3" fontWeight={800} sx={{ fontSize: { xs: '1.5rem', md: '1.875rem' }, lineHeight: 1, color: 'white', mb: 0.5 }}>
-                      {firstInnings.totalRuns || 0}/{firstInnings.totalWickets || 0}
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500, color: 'white', fontSize: '0.875rem' }}>
-                      ({firstInnings.totalOvers || '0.0'} ov)
-                    </Typography>
-                  </Box>
-                </Box>
-              );
-            })()}
-          </Grid>
-        </Grid>
-
-        {/* Match Info */}
-        <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'rgba(255,255,255,0.2)' }}>
-          {resultText && (
-            <Typography variant="body1" sx={{ mb: 0.5 }} fontWeight="bold">
-              {resultText}
-            </Typography>
-          )}
-          <Typography variant="body2">
-            {match.tossWinner?.shortName || match.tossWinner?.name || 'Team'} won the toss and chose to {match.tossDecision}
+        {/* Match Status */}
+        {resultText ? (
+          <Typography variant="body1" sx={{ mb: 3, fontWeight: 600, fontSize: '0.95rem' }}>
+            {resultText}
           </Typography>
-        </Box>
-      </Paper>
+        ) : secondInnings?.target && secondInningsBattingTeam && (
+          <Typography variant="body1" sx={{ mb: 3, fontWeight: 600, fontSize: '0.95rem' }}>
+            {secondInningsBattingTeam?.shortName || secondInningsBattingTeam?.name} need {(secondInnings.target - secondInnings.totalRuns)} runs to win
+          </Typography>
+        )}
+
+        {/* Toss Info */}
+        <Typography variant="body2" sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'rgba(255,255,255,0.1)', opacity: 0.9 }}>
+          {match.tossWinner?.shortName || match.tossWinner?.name || 'Team'} won the toss and chose to {match.tossDecision}
+        </Typography>
+        </Paper>
+      </Box>
 
       {/* Tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={tabValue} onChange={handleTabChange}>
+      <Box sx={{ 
+        borderBottom: 2, 
+        borderColor: '#1976d2',
+        mb: 3,
+        bgcolor: 'white',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      }}>
+        <Tabs 
+          value={tabValue} 
+          onChange={handleTabChange}
+          sx={{
+            '& .MuiTab-root': {
+              color: '#666',
+              fontWeight: 600,
+              fontSize: '0.95rem',
+              textTransform: 'none',
+              minHeight: 48,
+              '&.Mui-selected': {
+                color: '#1976d2',
+                fontWeight: 700
+              }
+            },
+            '& .MuiTabs-indicator': {
+              height: 3,
+              borderRadius: '3px 3px 0 0',
+              bgcolor: '#1976d2'
+            }
+          }}
+        >
           <Tab label="Scorecard" />
           <Tab label="Commentary" />
           <Tab label="Statistics" />
+          <Tab label="Squads" />
         </Tabs>
       </Box>
 
@@ -509,9 +541,14 @@ const MatchDetails = () => {
       {tabValue === 0 && (
         <Box>
           {/* Batting Scorecard */}
-          <Paper elevation={2} sx={{ mb: 3 }}>
-            <Box sx={{ bgcolor: 'primary.main', color: 'white', p: 2 }}>
-              <Typography variant="h6" fontWeight="bold">
+          <Paper elevation={2} sx={{ mb: 3, overflow: 'hidden' }}>
+            <Box sx={{ 
+              background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 50%, #2196f3 100%)',
+              color: 'white', 
+              p: 2.5,
+              boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)'
+            }}>
+              <Typography variant="h6" fontWeight="bold" sx={{ letterSpacing: '0.3px' }}>
                 {currentInnings?.battingTeam?.shortName || currentInnings?.battingTeam?.name || 
                  (currentInnings?.battingTeamId === match.team1Id ? (match.team1?.shortName || match.team1?.name) : (match.team2?.shortName || match.team2?.name)) || 
                  'Team'} Innings - {currentInnings?.totalRuns || 0}/{currentInnings?.totalWickets || 0} ({currentInnings?.totalOvers || '0.0'} ov)
@@ -533,6 +570,33 @@ const MatchDetails = () => {
                 <TableBody>
                   {statistics?.battingStats?.length > 0 ? statistics.battingStats.map((stat, index) => {
                     console.log('Batting stat:', stat); // Debug log
+                    console.log('Player ID:', stat.player?.id);
+                    console.log('Current Innings Striker ID:', currentInnings?.strikerId);
+                    console.log('Statistics Striker ID:', statistics?.currentStriker?.id);
+                    console.log('Is Out:', stat.isOut);
+                    
+                    // Determine if this batsman is on strike
+                    // Priority: stat.isOnStrike > currentInnings.strikerId > statistics.currentStriker
+                    // For not-out batsmen, if only one is not out, mark as on strike
+                    const notOutBatsmen = statistics?.battingStats?.filter(s => !s.isOut) || [];
+                    
+                    let isOnStrike = false;
+                    if (stat.isOnStrike === true) {
+                      isOnStrike = true;
+                    } else if (currentInnings?.strikerId && stat.player?.id === currentInnings?.strikerId) {
+                      isOnStrike = true;
+                    } else if (statistics?.currentStriker?.id && stat.player?.id === statistics?.currentStriker?.id) {
+                      isOnStrike = true;
+                    } else if (!stat.isOut && notOutBatsmen.length === 1) {
+                      // If only one batsman is not out, they must be on strike
+                      isOnStrike = true;
+                    } else if (!stat.isOut && notOutBatsmen.length === 2 && index === statistics.battingStats.findIndex(s => !s.isOut)) {
+                      // If two batsmen are not out and no striker info, mark the first not-out as striker
+                      isOnStrike = true;
+                    }
+                    
+                    console.log('Is On Strike:', isOnStrike);
+                    
                     // Format dismissal text
                     let dismissalText = '';
                     if (!stat.isOut) {
@@ -560,11 +624,11 @@ const MatchDetails = () => {
                     }
 
                     return (
-                      <TableRow key={index} sx={{ bgcolor: !stat.isOut ? 'success.lighter' : 'inherit' }}>
+                      <TableRow key={index} sx={{ bgcolor: isOnStrike ? 'success.lighter' : 'inherit' }}>
                         <TableCell>
                           <Box>
-                            <Typography fontWeight={!stat.isOut ? 'bold' : 'normal'}>
-                              {stat.player?.name} {!stat.isOut && '⭐'}
+                            <Typography fontWeight={isOnStrike ? 'bold' : 'normal'}>
+                              {stat.player?.name} {isOnStrike && '⭐'}
                             </Typography>
                             <Typography variant="caption" color={!stat.isOut ? 'success.main' : 'text.secondary'} sx={{ fontStyle: 'italic' }}>
                               {dismissalText}
@@ -602,9 +666,13 @@ const MatchDetails = () => {
 
           {/* First Innings Summary Card (when second innings is active) */}
           {secondInnings && firstInnings && (
-            <Card sx={{ mb: 3 }}>
-              <Box sx={{ p: 2, bgcolor: 'grey.100' }}>
-                <Typography variant="h6" fontWeight="bold">
+            <Card sx={{ mb: 3, overflow: 'hidden' }}>
+              <Box sx={{ 
+                p: 2, 
+                background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+                borderLeft: '4px solid #1976d2'
+              }}>
+                <Typography variant="h6" fontWeight="bold" sx={{ color: '#0d47a1' }}>
                   1st Innings Summary - {firstInningsBattingTeam?.shortName || firstInningsBattingTeam?.name || 'Team'}
                 </Typography>
               </Box>
@@ -620,9 +688,14 @@ const MatchDetails = () => {
           )}
 
           {/* Bowling Scorecard */}
-          <Paper elevation={2} sx={{ mb: 3 }}>
-            <Box sx={{ bgcolor: 'secondary.main', color: 'white', p: 2 }}>
-              <Typography variant="h6" fontWeight="bold">
+          <Paper elevation={2} sx={{ mb: 3, overflow: 'hidden' }}>
+            <Box sx={{ 
+              background: 'linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%)',
+              color: 'white', 
+              p: 2.5,
+              boxShadow: '0 2px 8px rgba(21, 101, 192, 0.3)'
+            }}>
+              <Typography variant="h6" fontWeight="bold" sx={{ letterSpacing: '0.3px' }}>
                 {currentInnings?.bowlingTeam?.shortName || currentInnings?.bowlingTeam?.name ||
                  (currentInnings?.bowlingTeamId === match.team1Id
                    ? (match.team1?.shortName || match.team1?.name)
@@ -672,9 +745,13 @@ const MatchDetails = () => {
           </Paper>
 
           {/* Fall of Wickets */}
-          <Card sx={{ mb: 3 }}>
-            <Box sx={{ p: 2, bgcolor: 'grey.100' }}>
-              <Typography variant="h6" fontWeight="bold">
+          <Card sx={{ mb: 3, overflow: 'hidden' }}>
+            <Box sx={{ 
+              p: 2, 
+              background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)',
+              color: 'white'
+            }}>
+              <Typography variant="h6" fontWeight="bold" sx={{ letterSpacing: '0.3px' }}>
                 Fall of Wickets
               </Typography>
             </Box>
@@ -701,9 +778,13 @@ const MatchDetails = () => {
           </Card>
 
           {/* Partnerships */}
-          <Card>
-            <Box sx={{ p: 2, bgcolor: 'grey.100' }}>
-              <Typography variant="h6" fontWeight="bold">
+          <Card sx={{ overflow: 'hidden' }}>
+            <Box sx={{ 
+              p: 2, 
+              background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)',
+              color: 'white'
+            }}>
+              <Typography variant="h6" fontWeight="bold" sx={{ letterSpacing: '0.3px' }}>
                 Partnerships
               </Typography>
             </Box>
@@ -727,11 +808,17 @@ const MatchDetails = () => {
 
       {/* Commentary Tab */}
       {tabValue === 1 && (
-        <Paper elevation={2} sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom fontWeight="bold">
-            Live Commentary
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
+        <Paper elevation={2} sx={{ overflow: 'hidden' }}>
+          <Box sx={{ 
+            p: 2.5, 
+            background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)',
+            color: 'white'
+          }}>
+            <Typography variant="h6" fontWeight="bold" sx={{ letterSpacing: '0.3px' }}>
+              Live Commentary
+            </Typography>
+          </Box>
+          <Box sx={{ p: 3 }}>
           {commentary && commentary.length > 0 ? commentary.map((comment, index) => (
             <Box 
               key={comment.id || index} 
@@ -770,6 +857,7 @@ const MatchDetails = () => {
               No commentary available yet. Start recording balls to see commentary.
             </Typography>
           )}
+          </Box>
         </Paper>
       )}
 
@@ -777,9 +865,13 @@ const MatchDetails = () => {
       {tabValue === 2 && (
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <Card>
-              <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'white' }}>
-                <Typography variant="h6" fontWeight="bold">
+            <Card sx={{ overflow: 'hidden' }}>
+              <Box sx={{ 
+                p: 2, 
+                background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)',
+                color: 'white' 
+              }}>
+                <Typography variant="h6" fontWeight="bold" sx={{ letterSpacing: '0.3px' }}>
                   Match Statistics
                 </Typography>
               </Box>
@@ -808,9 +900,13 @@ const MatchDetails = () => {
             </Card>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Card>
-              <Box sx={{ p: 2, bgcolor: 'secondary.main', color: 'white' }}>
-                <Typography variant="h6" fontWeight="bold">
+            <Card sx={{ overflow: 'hidden' }}>
+              <Box sx={{ 
+                p: 2, 
+                background: 'linear-gradient(135deg, #0d47a1 0%, #1565c0 100%)',
+                color: 'white' 
+              }}>
+                <Typography variant="h6" fontWeight="bold" sx={{ letterSpacing: '0.3px' }}>
                   Scoring Breakdown
                 </Typography>
               </Box>
@@ -866,6 +962,201 @@ const MatchDetails = () => {
             </Card>
           </Grid>
         </Grid>
+      )}
+
+      {/* Squads Tab */}
+      {tabValue === 3 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+          <Grid container spacing={0} sx={{ maxWidth: '1800px'}}>
+            {/* Team 1 Squad */}
+            <Grid item xs={12} sm={12} md={6} lg={6} sx={{ pr: { md: 1 } }}>
+            <Paper elevation={2} sx={{ overflow: 'hidden' }}>
+              {/* Team Header */}
+              <Box sx={{ 
+                background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)',
+                color: 'white', 
+                p: 2.5,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)'
+              }}>
+                <Box sx={{
+                  width: 40,
+                  height: 28,
+                  bgcolor: 'white',
+                  borderRadius: 0.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.25rem'
+                }}>
+                  🏏
+                </Box>
+                <Typography variant="h6" fontWeight="bold" sx={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  {match.team1?.name || 'Team 1'}
+                </Typography>
+              </Box>
+              
+              {/* Squads Label */}
+              <Box sx={{ bgcolor: '#f5f5f5', px: 2.5, py: 1 }}>
+                <Typography variant="subtitle2" fontWeight="bold" sx={{ color: '#333', letterSpacing: '0.5px' }}>
+                  SQUADS
+                </Typography>
+              </Box>
+
+              {/* Players List */}
+              <Box sx={{ bgcolor: 'white' }}>
+                {team1Squad.length > 0 ? team1Squad.map((player) => {
+                  // Determine role suffix
+                  let roleSuffix = '';
+                  if (player.role?.toLowerCase().includes('captain')) {
+                    roleSuffix = ' (c)';
+                  } else if (player.role?.toLowerCase().includes('wicket')) {
+                    roleSuffix = ' (wk)';
+                  }
+                  
+                  return (
+                    <Box
+                      key={player.id}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        px: 2.5,
+                        py: 2,
+                        borderBottom: '1px solid #e0e0e0',
+                        '&:last-child': {
+                          borderBottom: 'none'
+                        },
+                        '&:hover': {
+                          bgcolor: '#fafafa'
+                        }
+                      }}
+                    >
+                      <Avatar
+                        sx={{
+                          bgcolor: '#d0d0d0',
+                          width: 40,
+                          height: 40,
+                          fontSize: '0.875rem',
+                          fontWeight: 'bold',
+                          color: '#666'
+                        }}
+                      >
+                        {player.name.charAt(0)}
+                      </Avatar>
+                      <Typography variant="body1" fontWeight="600" sx={{ color: '#000' }}>
+                        {player.name}{roleSuffix}
+                      </Typography>
+                    </Box>
+                  );
+                }) : (
+                  <Box sx={{ p: 3, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      No squad information available
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Team 2 Squad */}
+          <Grid item xs={12} sm={12} md={6} lg={6} sx={{ pl: { md: 1 } }}>
+            <Paper elevation={2} sx={{ overflow: 'hidden' }}>
+              {/* Team Header */}
+              <Box sx={{ 
+                background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)',
+                color: 'white', 
+                p: 2.5,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)'
+              }}>
+                <Box sx={{
+                  width: 40,
+                  height: 28,
+                  bgcolor: 'white',
+                  borderRadius: 0.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.25rem'
+                }}>
+                  🏏
+                </Box>
+                <Typography variant="h6" fontWeight="bold" sx={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  {match.team2?.name || 'Team 2'}
+                </Typography>
+              </Box>
+              
+              {/* Squads Label */}
+              <Box sx={{ bgcolor: '#f5f5f5', px: 2.5, py: 1 }}>
+                <Typography variant="subtitle2" fontWeight="bold" sx={{ color: '#333', letterSpacing: '0.5px' }}>
+                  SQUADS
+                </Typography>
+              </Box>
+
+              {/* Players List */}
+              <Box sx={{ bgcolor: 'white' }}>
+                {team2Squad.length > 0 ? team2Squad.map((player) => {
+                  // Determine role suffix
+                  let roleSuffix = '';
+                  if (player.role?.toLowerCase().includes('captain')) {
+                    roleSuffix = ' (c)';
+                  } else if (player.role?.toLowerCase().includes('wicket')) {
+                    roleSuffix = ' (wk)';
+                  }
+                  
+                  return (
+                    <Box
+                      key={player.id}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        px: 2.5,
+                        py: 2,
+                        borderBottom: '1px solid #e0e0e0',
+                        '&:last-child': {
+                          borderBottom: 'none'
+                        },
+                        '&:hover': {
+                          bgcolor: '#fafafa'
+                        }
+                      }}
+                    >
+                      <Avatar
+                        sx={{
+                          bgcolor: '#d0d0d0',
+                          width: 40,
+                          height: 40,
+                          fontSize: '0.875rem',
+                          fontWeight: 'bold',
+                          color: '#666'
+                        }}
+                      >
+                        {player.name.charAt(0)}
+                      </Avatar>
+                      <Typography variant="body1" fontWeight="600" sx={{ color: '#000' }}>
+                        {player.name}{roleSuffix}
+                      </Typography>
+                    </Box>
+                  );
+                }) : (
+                  <Box sx={{ p: 3, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      No squad information available
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            </Paper>
+          </Grid>
+          </Grid>
+        </Box>
       )}
     </Container>
   );

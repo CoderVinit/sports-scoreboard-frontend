@@ -1,259 +1,176 @@
-import { AppBar, Toolbar, Typography, Button, Box, IconButton, Menu, MenuItem, Avatar, Chip, Divider } from '@mui/material';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import SportsCricketIcon from '@mui/icons-material/SportsCricket';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import HomeIcon from '@mui/icons-material/Home';
-import LiveTvIcon from '@mui/icons-material/LiveTv';
-import LoginIcon from '@mui/icons-material/Login';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import LogoutIcon from '@mui/icons-material/Logout';
+import { Home, Tv, Shield, LogIn, UserPlus, LogOut, Menu as MenuIcon, Trophy } from 'lucide-react';
 import { logout } from '../features/auth/authSlice';
 import { useState } from 'react';
+import { Button } from './ui/button';
+import { Avatar, AvatarFallback } from './ui/avatar';
+import { Badge } from './ui/badge';
+import { cn } from '@/lib/utils';
 
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, isAdmin, user } = useSelector((state) => state.auth);
-  const [anchorEl, setAnchorEl] = useState(null);
-
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const handleLogout = () => {
     dispatch(logout());
-    handleMenuClose();
+    setShowUserMenu(false);
     navigate('/');
   };
 
   const isActive = (path) => location.pathname === path;
 
   return (
-    <AppBar 
-      position="sticky" 
-      elevation={1}
-      sx={{
-        background: '#1976d2',
-        borderBottom: '1px solid #1565c0',
-      }}
-    >
-      <Toolbar sx={{ py: 1, px: { xs: 2, md: 3 } }}>
-        {/* Logo Section */}
-        <Box 
-          component={Link} 
-          to="/" 
-          sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            textDecoration: 'none',
-            color: 'inherit',
-            mr: 3
-          }}
-        >
-          <SportsCricketIcon sx={{ fontSize: 28, mr: 1, color: 'white' }} />
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              fontWeight: 600,
-              color: 'white',
-              display: { xs: 'none', sm: 'block' }
-            }}
+    <header className="sticky top-0 z-50 w-full border-b border-blue-700 bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg">
+      <div className="w-full">
+        <div className="flex h-16 items-center justify-between px-6">
+          {/* Logo Section */}
+          <Link 
+            to="/" 
+            className="flex items-center gap-3 text-white hover:opacity-90 transition-opacity"
           >
-            Cricket Scoreboard
-          </Typography>
-        </Box>
+            <div className="relative">
+              <Trophy className="w-8 h-8" strokeWidth={2.5} />
+            </div>
+            <div className="hidden sm:flex flex-col">
+              <span className="font-bold text-xl leading-tight">
+                CricScore
+              </span>
+              <span className="text-xs text-blue-100 leading-tight">
+                Live Cricket Updates
+              </span>
+            </div>
+          </Link>
 
-        {/* Navigation Links */}
-        <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', flexGrow: 1 }}>
-          <Button
-            component={Link}
-            to="/"
-            startIcon={<HomeIcon />}
-            sx={{
-              color: 'white',
-              fontWeight: isActive('/') ? 600 : 400,
-              textTransform: 'none',
-              px: 2,
-              '&:hover': {
-                background: 'rgba(255, 255, 255, 0.1)',
-              },
-            }}
-          >
-            Home
-          </Button>
-          
-          <Button
-            component={Link}
-            to="/live"
-            startIcon={<LiveTvIcon />}
-            sx={{
-              color: 'white',
-              fontWeight: isActive('/live') ? 600 : 400,
-              textTransform: 'none',
-              px: 2,
-              '&:hover': {
-                background: 'rgba(255, 255, 255, 0.1)',
-              },
-            }}
-          >
-            Live Matches
-          </Button>
-          
-          {isAdmin && (
-            <Button
-              component={Link}
-              to="/admin"
-              startIcon={<AdminPanelSettingsIcon />}
-              sx={{
-                color: 'white',
-                fontWeight: isActive('/admin') ? 600 : 400,
-                textTransform: 'none',
-                px: 2,
-                '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.1)',
-                },
-              }}
-            >
-              Admin
-            </Button>
-          )}
-        </Box>
-
-        {/* Auth Section */}
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          {isAuthenticated ? (
-            <>
-              <IconButton
-                onClick={handleMenuOpen}
-                sx={{
-                  color: 'white',
-                  '&:hover': {
-                    background: 'rgba(255, 255, 255, 0.1)',
-                  },
-                }}
+          {/* Navigation Links */}
+          <nav className="flex items-center gap-2 flex-1 ml-8">
+            <Link to="/">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "text-white gap-2 font-medium",
+                  isActive('/') ? "bg-white/20 hover:bg-white/25" : "hover:bg-white/10"
+                )}
               >
-                <Avatar 
-                  sx={{ 
-                    width: 32, 
-                    height: 32,
-                    background: '#1565c0',
-                    fontSize: '0.875rem',
-                    fontWeight: 600
-                  }}
+                <Home className="h-4 w-4" />
+                <span>Home</span>
+              </Button>
+            </Link>
+            
+            <Link to="/live">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "text-white gap-2 font-medium",
+                  isActive('/live') ? "bg-white/20 hover:bg-white/25" : "hover:bg-white/10"
+                )}
+              >
+                <Tv className="h-4 w-4" />
+                <span>Live Matches</span>
+              </Button>
+            </Link>
+            
+            {isAdmin && (
+              <Link to="/admin">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "text-white gap-2 font-medium",
+                    isActive('/admin') ? "bg-white/20 hover:bg-white/25" : "hover:bg-white/10"
+                  )}
                 >
-                  {user?.username?.charAt(0)?.toUpperCase() || 'U'}
-                </Avatar>
-              </IconButton>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-                PaperProps={{
-                  elevation: 4,
-                  sx: {
-                    mt: 1,
-                    minWidth: 200,
-                    '& .MuiMenuItem-root': {
-                      px: 2,
-                      py: 1.5,
-                    },
-                  },
-                }}
-                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-              >
-                <MenuItem disabled>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, width: '100%' }}>
-                    <Avatar 
-                      sx={{ 
-                        width: 40, 
-                        height: 40,
-                        background: '#1976d2',
-                        fontSize: '1rem',
-                        fontWeight: 600
-                      }}
-                    >
+                  <Shield className="h-4 w-4" />
+                  <span>Admin</span>
+                </Button>
+              </Link>
+            )}
+          </nav>
+
+          {/* Auth Section */}
+          <div className="flex items-center gap-3">
+            {isAuthenticated ? (
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center gap-2 hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-white/50 rounded-full"
+                >
+                  <Avatar className="h-9 w-9 bg-white/20 border-2 border-white/30">
+                    <AvatarFallback className="bg-white text-blue-600 font-bold text-base">
                       {user?.username?.charAt(0)?.toUpperCase() || 'U'}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="body2" fontWeight={600} color="text.primary">
-                        {user?.username || 'User'}
-                      </Typography>
-                      {isAdmin && (
-                        <Chip 
-                          label="Admin" 
-                          size="small" 
-                          color="primary"
-                          sx={{ 
-                            mt: 0.5,
-                            height: 20,
-                            fontSize: '0.65rem',
-                            fontWeight: 600
-                          }} 
-                        />
-                      )}
-                    </Box>
-                  </Box>
-                </MenuItem>
-                <Divider sx={{ my: 1 }} />
-                <MenuItem 
-                  onClick={handleLogout}
-                  sx={{
-                    color: 'error.main',
-                    '&:hover': {
-                      background: 'rgba(244, 67, 54, 0.08)',
-                    },
-                  }}
-                >
-                  <LogoutIcon sx={{ mr: 1.5, fontSize: 20 }} />
-                  <Typography variant="body2" fontWeight={500}>Logout</Typography>
-                </MenuItem>
-              </Menu>
-            </>
-          ) : (
-            <>
-              <Button
-                component={Link}
-                to="/login"
-                startIcon={<LoginIcon />}
-                sx={{
-                  color: 'white',
-                  textTransform: 'none',
-                  '&:hover': {
-                    background: 'rgba(255, 255, 255, 0.1)',
-                  },
-                }}
-              >
-                Login
-              </Button>
-              <Button
-                component={Link}
-                to="/register"
-                startIcon={<PersonAddIcon />}
-                variant="contained"
-                sx={{
-                  background: 'white',
-                  color: '#1976d2',
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  '&:hover': {
-                    background: '#f5f5f5',
-                  },
-                }}
-              >
-                Register
-              </Button>
-            </>
-          )}
-        </Box>
-      </Toolbar>
-    </AppBar>
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+                
+                {showUserMenu && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => setShowUserMenu(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-56 rounded-lg border border-gray-200 bg-white shadow-xl z-50">
+                      <div className="p-4 border-b border-gray-200">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-11 w-11 border-2 border-blue-600">
+                            <AvatarFallback className="bg-blue-600 text-white font-bold text-lg">
+                              {user?.username?.charAt(0)?.toUpperCase() || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <p className="font-bold text-sm text-gray-900">{user?.username || 'User'}</p>
+                            {isAdmin && (
+                              <Badge className="mt-1.5 text-xs bg-blue-600 text-white hover:bg-blue-700">
+                                Admin
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          onClick={handleLogout}
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          <span>Logout</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-white gap-2 font-medium hover:bg-white/10 border border-white/20"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    <span>Login</span>
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button
+                    size="sm"
+                    className="gap-2 bg-white text-blue-600 hover:bg-blue-50 font-semibold shadow-md"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span>Register</span>
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
   );
 };
 
