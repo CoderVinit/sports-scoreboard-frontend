@@ -33,10 +33,13 @@ apiClient.interceptors.response.use(
     if (error.response) {
       // Server responded with error status
       const { status, data } = error.response;
-      
+
+      // For auth endpoints like login/register, let the UI handle 401
+      const requestUrl = error.config?.url || '';
+
       // Handle specific status codes
-      if (status === 401) {
-        // Unauthorized - clear token and redirect to login
+      if (status === 401 && !requestUrl.includes('/auth/login') && !requestUrl.includes('/auth/register')) {
+        // Unauthorized on protected routes - clear token and redirect to login
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/login';
@@ -47,8 +50,8 @@ apiClient.interceptors.response.use(
       } else if (status === 500) {
         console.error('Server Error:', data.message);
       }
-      
-      return Promise.reject(error.response.data);
+
+      return Promise.reject(error.response.data || { message: 'Request failed' });
     } else if (error.request) {
       // Request made but no response received
       console.error('Network Error: No response from server');

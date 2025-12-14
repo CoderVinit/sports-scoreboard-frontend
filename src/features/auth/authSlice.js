@@ -8,7 +8,13 @@ export const loginUser = createAsyncThunk(
       const response = await authService.login(credentials);
       return response;
     } catch (error) {
-      return rejectWithValue(error.message || 'Login failed');
+      const message =
+        (typeof error === 'string' && error) ||
+        error?.message ||
+        error?.error ||
+        error?.errors?.[0] ||
+        'Invalid username or password';
+      return rejectWithValue(message);
     }
   }
 );

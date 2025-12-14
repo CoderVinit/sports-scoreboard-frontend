@@ -22,7 +22,7 @@ const LoginPageStatic = () => {
 
     try {
       const result = await dispatch(loginUser(credentials)).unwrap();
-      
+
       // Redirect based on role
       if (result.user.role === 'admin') {
         navigate('/admin');
@@ -30,7 +30,11 @@ const LoginPageStatic = () => {
         navigate('/');
       }
     } catch (err) {
-      setError(err || 'Invalid username or password');
+      const message =
+        (typeof err === 'string' && err) ||
+        err?.message ||
+        'Invalid username or password';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -47,20 +51,12 @@ const LoginPageStatic = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Alert className="mb-4 bg-blue-50 border-blue-200">
-            <AlertDescription>
-              <strong>Demo Credentials:</strong><br />
-              Admin: username: <code className="text-xs bg-blue-100 px-1 py-0.5 rounded">admin</code>, password: <code className="text-xs bg-blue-100 px-1 py-0.5 rounded">admin123</code><br />
-              User: username: <code className="text-xs bg-blue-100 px-1 py-0.5 rounded">user</code>, password: <code className="text-xs bg-blue-100 px-1 py-0.5 rounded">user123</code>
-            </AlertDescription>
-          </Alert>
+          {/* Demo credentials removed */}
 
           {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>
-                {typeof error === 'string' ? error : error?.message || 'An error occurred'}
-              </AlertDescription>
-            </Alert>
+            <div className="mb-4 text-red-600 bg-transparent rounded px-4 py-2 font-medium">
+              {typeof error === 'string' ? error : error?.message || 'An error occurred'}
+            </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -92,11 +88,14 @@ const LoginPageStatic = () => {
             </div>
             <Button
               type="submit"
-              className="w-full h-11 text-base font-semibold"
+              className="w-full h-11 text-base font-semibold flex items-center justify-center"
               disabled={loading}
             >
               {loading ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Logging in...
+                </>
               ) : (
                 <>
                   <LogIn className="w-5 h-5 mr-2" />
