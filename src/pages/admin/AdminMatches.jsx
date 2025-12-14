@@ -11,6 +11,8 @@ import { fetchTeams } from '../../features/teams/teamSlice';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import SportsScoreIcon from '@mui/icons-material/SportsScore';
+import AdminLayout from '../../components/admin/AdminLayout';
+import CricketLoader from '../../components/CricketLoader';
 
 const AdminMatches = () => {
   const dispatch = useDispatch();
@@ -30,6 +32,14 @@ const AdminMatches = () => {
     dispatch(fetchMatches());
     dispatch(fetchTeams());
   }, [dispatch]);
+
+  if (loading && (!matches || matches.length === 0)) {
+    return (
+      <AdminLayout title="Matches" subtitle="Create and maintain fixtures for the tournament.">
+        <CricketLoader />
+      </AdminLayout>
+    );
+  }
 
   const handleCreateMatch = async () => {
     await dispatch(createMatch(newMatch));

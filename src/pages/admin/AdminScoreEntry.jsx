@@ -7,11 +7,13 @@ import {
 } from '@mui/material';
 import { fetchMatchById, updateMatch } from '../../features/matches/matchSlice';
 import { recordBall } from '../../features/innings/inningsSlice';
+import AdminLayout from '../../components/admin/AdminLayout';
+import CricketLoader from '../../components/CricketLoader';
 
 const AdminScoreEntry = () => {
   const { matchId } = useParams();
   const dispatch = useDispatch();
-  const { currentMatch } = useSelector((state) => state.matches);
+  const { currentMatch, loading } = useSelector((state) => state.matches);
   
   const [ballData, setBallData] = useState({
     runs: 0,
@@ -68,8 +70,12 @@ const AdminScoreEntry = () => {
     setTimeout(() => setMessage(''), 3000);
   };
 
-  if (!currentMatch) {
-    return <Container><Typography>Loading...</Typography></Container>;
+  if (loading || !currentMatch) {
+    return (
+      <AdminLayout title="Score Entry" subtitle="Record ball-by-ball updates for the selected match.">
+        <CricketLoader />
+      </AdminLayout>
+    );
   }
 
   return (

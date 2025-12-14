@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Calendar, Clock, MapPin, Trophy, TrendingUp, Radio, Sparkles } from 'lucide-react';
+import CricketLoader from '../components/CricketLoader';
 
 const HomePage = () => {
   const [liveMatches, setLiveMatches] = useState([]);
@@ -80,11 +81,7 @@ const HomePage = () => {
   }, [upcomingMatches]);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <CricketLoader />;
   }
 
   if (error) {
@@ -594,13 +591,6 @@ const HomePage = () => {
           </div>
         )}
       </div>
-      
-      {/* Footer */}
-      <footer className="mt-16 bg-gradient-to-r from-gray-800 to-gray-900 text-white py-8 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <p className="text-gray-300">© 2025 CricScore. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 };
