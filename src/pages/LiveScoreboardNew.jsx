@@ -102,7 +102,7 @@ const LiveScoreboard = () => {
           </CardHeader>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {liveMatches && liveMatches.map((match) => {
           const totalOvers = match.totalOvers || (match.matchFormat === 'T20' ? 20 : match.matchFormat === 'ODI' ? 50 : 90);
           const inningsList = match.innings || [];
@@ -160,138 +160,109 @@ const LiveScoreboard = () => {
           
           return (
             <Link to={`/match/${match.id}`} key={match.id} className="block">
-              <Card className="group h-full bg-white hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-2 border-transparent hover:border-blue-500 relative overflow-hidden">
+              <Card className="h-full bg-white hover:shadow-lg transition-shadow duration-200 border border-gray-200 relative overflow-hidden">
                 {/* Live Badge */}
-                <Badge variant="destructive" className="absolute top-4 right-4 z-10 animate-pulse shadow-lg">
-                  <Radio className="w-3 h-3 mr-1" />
+                <Badge className="absolute top-3 right-3 bg-red-600 text-white text-xs px-2 py-0.5 flex items-center gap-1 z-10 animate-pulse">
+                  <Radio className="w-3 h-3" />
                   LIVE
                 </Badge>
 
-                {/* Match Info Header */}
-                <CardHeader className="pb-3 bg-gradient-to-r from-slate-50 to-blue-50 border-b">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <Badge className="bg-blue-600 hover:bg-blue-700">
-                      <Trophy className="w-3 h-3 mr-1" />
+                <CardContent className="pt-4 pb-3 px-4 space-y-3">
+                  {/* Match meta */}
+                  <div className="text-xs text-gray-600 mb-2 pr-16 flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline" className="text-[10px] font-medium px-2 py-0.5">
                       {match.matchFormat || match.matchType}
                     </Badge>
-                    <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                      <MapPin className="w-4 h-4" />
-                      <span className="font-medium">{match.venue}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                      <Calendar className="w-4 h-4" />
-                      <span className="font-medium">
-                        {new Date(match.matchDate).toLocaleDateString('en-US', { 
-                          weekday: 'long',
-                          month: 'short', 
-                          day: 'numeric', 
-                          year: 'numeric' 
-                        })}
-                      </span>
-                    </div>
+                    <span className="inline-flex items-center gap-1 truncate max-w-[45%]">
+                      <MapPin className="w-3 h-3 text-gray-500" />
+                      <span className="truncate">{match.venue}</span>
+                    </span>
                   </div>
-                </CardHeader>
 
-                {/* Teams and Scores */}
-                <CardContent className="pt-4 space-y-4">
-                  {/* Batting Team */}
-                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 rounded-xl text-white shadow-lg">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-11 w-11 border-2 border-white/30 bg-white/20">
-                          <AvatarFallback className="bg-transparent text-white font-bold text-lg">
-                            {battingTeam?.shortName?.charAt(0) || battingTeam?.name?.charAt(0) || 'T'}
+                  {/* Teams row */}
+                  <div className="space-y-2">
+                    {/* Batting Team */}
+                    <div className="flex items-center justify-between gap-2 bg-gradient-to-r from-blue-600 to-blue-700 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Avatar className="h-8 w-8 bg-white/20 border border-white/30 flex-shrink-0">
+                          <AvatarFallback className="bg-transparent text-white font-bold text-xs">
+                            {(battingTeam?.shortName || battingTeam?.name || 'BAT').substring(0, 3).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <div>
-                          <h3 className="font-bold text-lg leading-tight">
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-sm text-white truncate">
                             {battingTeam?.shortName || battingTeam?.name || 'Team'}
-                          </h3>
-                          <Badge variant="secondary" className="mt-1 bg-white/20 text-white border-white/20 hover:bg-white/30 text-xs">
-                            Batting
-                          </Badge>
+                          </div>
+                          <div className="text-[10px] text-blue-100">Batting</div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-4xl font-extrabold leading-none">
+                      <div className="text-right flex-shrink-0">
+                        <div className="text-2xl font-bold text-white leading-none">
                           {`${battingScore.totalRuns || 0}/${battingScore.totalWickets || 0}`}
                         </div>
-                        <div className="text-sm font-medium text-blue-100 mt-1">
-                          ({battingScore.totalOvers || '0.0'}/{totalOvers} ov)
+                        <div className="text-[10px] text-blue-100 mt-0.5">
+                          ({battingScore.totalOvers || '0.0'}/{totalOvers})
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bowling Team */}
+                    <div className="flex items-center justify-between gap-2 bg-gray-50 border border-gray-200 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Avatar className="h-8 w-8 bg-gray-400 flex-shrink-0">
+                          <AvatarFallback className="text-white font-bold text-xs">
+                            {(bowlingTeam?.shortName || bowlingTeam?.name || 'BWL').substring(0, 3).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-sm text-gray-900 truncate">
+                            {bowlingTeam?.shortName || bowlingTeam?.name || 'Team'}
+                          </div>
+                          <div className="text-[10px] text-gray-500">Bowling</div>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <div className="text-sm font-bold text-gray-700">
+                          {bowlingScore.totalRuns > 0 ? 
+                            `${bowlingScore.totalRuns || 0}/${bowlingScore.totalWickets || 0}` : 
+                            'Yet to bat'
+                          }
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-
-                  {/* Bowling Team */}
-                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-11 w-11 bg-slate-400">
-                          <AvatarFallback className="text-white font-bold text-lg">
-                            {bowlingTeam?.shortName?.charAt(0) || bowlingTeam?.name?.charAt(0) || 'T'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <h3 className="font-bold text-lg text-gray-900">
-                          {bowlingTeam?.shortName || bowlingTeam?.name || 'Team'}
-                        </h3>
-                      </div>
-                      <div className="text-lg font-bold text-gray-600">
-                        {bowlingScore.totalRuns > 0 ? 
-                          `${bowlingScore.totalRuns || 0}/${bowlingScore.totalWickets || 0}` : 
-                          'Yet to bat'
-                        }
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-
-                <div className="h-px bg-gray-200"></div>
-
-                {/* Match Progress and Stats */}
-                <CardContent className="pt-4 pb-4 bg-slate-50 border-t space-y-4">
+                  {/* Match Progress */}
                   {!isCompletedByInnings && (
                     <div>
-                      <div className="flex justify-between items-center mb-2 text-sm">
-                        <span className="font-semibold text-gray-600">Match Progress</span>
-                        <span className="text-gray-500 font-medium">
-                          {currentOvers.toFixed(1)}/{totalOvers} overs
+                      <div className="flex justify-between items-center mb-1 text-[11px]">
+                        <span className="text-gray-600">Progress</span>
+                        <span className="text-gray-500">
+                          {currentOvers.toFixed(1)}/{totalOvers} ov
                         </span>
                       </div>
-                      <Progress value={progress} className="h-2" />
+                      <Progress value={progress} className="h-1.5" />
                     </div>
                   )}
-                  
-                  {/* Match Stats */}
-                  <div className="flex items-center justify-between flex-wrap gap-3">
-                    <div className="flex items-center gap-2">
-                      {isCompletedByInnings && resultText ? (
-                        <p className="text-sm font-medium text-gray-600">
-                          Result: <span className="text-blue-600 font-bold">{resultText}</span>
-                        </p>
-                      ) : (
-                        <>
-                          <TrendingUp className="w-4 h-4 text-green-600" />
-                          <p className="text-sm font-medium text-gray-600">
-                            CRR: <span className="text-blue-600 font-bold">{getRunRate(battingScore.totalRuns || 0, currentOvers)}</span>
-                          </p>
-                        </>
-                      )}
+
+                  {/* Stats footer */}
+                  <div className="flex items-center justify-between text-[11px] pt-1 border-t border-gray-100">
+                    <div className="flex items-center gap-1 text-gray-600">
+                      <TrendingUp className="w-3 h-3 text-blue-600" />
+                      <span>
+                        CRR: <span className="text-blue-600 font-semibold">{getRunRate(battingScore.totalRuns || 0, currentOvers || 1)}</span>
+                      </span>
                     </div>
-                    <Badge variant={isCompletedByInnings ? 'secondary' : 'default'} className={!isCompletedByInnings && 'bg-green-100 text-green-800 hover:bg-green-200'}>
-                      {isCompletedByInnings ? 'Completed' : 'Match in progress'}
-                    </Badge>
+                    {isCompletedByInnings && resultText ? (
+                      <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-2 py-1 rounded-full truncate max-w-[50%]">
+                        {resultText}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-1 rounded-full">
+                        In progress
+                      </span>
+                    )}
                   </div>
-                  
-                  {match.tossWinner && (
-                    <div className="pt-3 border-t border-slate-200">
-                      <p className="text-sm font-medium text-gray-700 leading-relaxed">
-                        {match.tossWinner} won the toss and chose to {match.tossDecision || 'bat'}
-                      </p>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             </Link>

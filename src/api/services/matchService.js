@@ -43,6 +43,12 @@ const matchService = {
     return response.data;
   },
 
+  // Get innings-specific statistics
+  getInningsStatistics: async (matchId, inningsId) => {
+    const response = await apiClient.get(`/matches/${matchId}/innings/${inningsId}/statistics`);
+    return response.data;
+  },
+
   // Get live scorecard
   getLiveScorecard: async (matchId) => {
     const response = await apiClient.get(`/matches/${matchId}/live-scorecard`);
