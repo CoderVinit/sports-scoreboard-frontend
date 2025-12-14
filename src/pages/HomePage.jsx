@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Calendar, Clock, MapPin, Trophy, TrendingUp, Radio, Sparkles } from 'lucide-react';
+import CricketLoader from '../components/CricketLoader';
 
 const HomePage = () => {
   const [liveMatches, setLiveMatches] = useState([]);
@@ -80,11 +81,7 @@ const HomePage = () => {
   }, [upcomingMatches]);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <CricketLoader />;
   }
 
   if (error) {
@@ -99,6 +96,24 @@ const HomePage = () => {
 
   // Get featured upcoming match (first upcoming match)
   const featuredMatch = upcomingMatches[0];
+
+  const renderTeamLogo = (team, fallbackLabel) => {
+    const logoUrl = team?.logo;
+
+    return (
+      <div className="bg-white/15 backdrop-blur-sm rounded-full mb-2 inline-block border-2 border-white/30">
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            alt={`${team?.name || fallbackLabel} logo`}
+            className="w-14 h-14 rounded-full object-cover"
+          />
+        ) : (
+          <Trophy className="w-10 h-10 m-2" />
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
@@ -140,18 +155,14 @@ const HomePage = () => {
               {/* Teams */}
               <div className="flex items-center justify-center gap-6 mb-6">
                 <div className="text-center">
-                  <div className="bg-white/15 backdrop-blur-sm p-3 rounded-full mb-2 inline-block border-2 border-white/30">
-                    <Trophy className="w-10 h-10" />
-                  </div>
+                  {renderTeamLogo(featuredMatch.team1, 'Team 1')}
                   <div className="text-xl font-bold">{featuredMatch.team1?.name || 'Team 1'}</div>
                 </div>
                 
                 <div className="text-4xl font-bold px-4">VS</div>
                 
                 <div className="text-center">
-                  <div className="bg-white/15 backdrop-blur-sm p-3 rounded-full mb-2 inline-block border-2 border-white/30">
-                    <Trophy className="w-10 h-10" />
-                  </div>
+                  {renderTeamLogo(featuredMatch.team2, 'Team 2')}
                   <div className="text-xl font-bold">{featuredMatch.team2?.name || 'Team 2'}</div>
                 </div>
               </div>
@@ -473,62 +484,73 @@ const HomePage = () => {
               </div>
               <h2 className="text-3xl font-bold text-gray-900">Completed Matches</h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {completedMatches.slice(0, 6).map((match) => {
-                const inningsList = match.innings || [];
-                const firstInnings = inningsList.find((inn) => inn.inningsNumber === 1) || inningsList[0] || null;
-                const secondInnings = inningsList.find((inn) => inn.inningsNumber === 2) || (inningsList.length > 1 ? inningsList[1] : null);
+            <div className="overflow-x-auto pb-4 -mx-6 px-6">
+              <div className="flex gap-6 min-w-max"
+                   style={{ 
+                     display: 'flex',
+                     gap: '1.5rem'
+                   }}>
+                {completedMatches.slice(0, 6).map((match) => (
+                  <div key={match.id} className="w-[340px] flex-shrink-0">
+                {(() => {
+                  const inningsList = match.innings || [];
+                  const firstInnings = inningsList.find((inn) => inn.inningsNumber === 1) || inningsList[0] || null;
+                  const secondInnings = inningsList.find((inn) => inn.inningsNumber === 2) || (inningsList.length > 1 ? inningsList[1] : null);
 
-                const totalOvers = match.totalOvers || (match.matchFormat === 'T20' ? 20 : match.matchFormat === 'ODI' ? 50 : 90);
+                  const totalOvers = match.totalOvers || (match.matchFormat === 'T20' ? 20 : match.matchFormat === 'ODI' ? 50 : 90);
 
-                const winnerTeam =
-                  match.winnerId === match.team1Id
-                    ? match.team1
-                    : match.winnerId === match.team2Id
-                    ? match.team2
-                    : null;
+                  const winnerTeam =
+                    match.winnerId === match.team1Id
+                      ? match.team1
+                      : match.winnerId === match.team2Id
+                      ? match.team2
+                      : null;
 
-                const team1 = match.team1;
-                const team2 = match.team2;
-                const team1Innings = inningsList.find((inn) => inn.battingTeamId === match.team1Id);
-                const team2Innings = inningsList.find((inn) => inn.battingTeamId === match.team2Id);
+                  const team1 = match.team1;
+                  const team2 = match.team2;
+                  const team1Innings = inningsList.find((inn) => inn.battingTeamId === match.team1Id);
+                  const team2Innings = inningsList.find((inn) => inn.battingTeamId === match.team2Id);
 
-                let resultText = '';
-                if (firstInnings && secondInnings) {
-                  // Determine which team batted first and second
-                  const team1Runs = team1Innings?.totalRuns || 0;
-                  const team2Runs = team2Innings?.totalRuns || 0;
-                  const team1Wickets = team1Innings?.totalWickets || 0;
-                  const team2Wickets = team2Innings?.totalWickets || 0;
+                  let resultText = '';
                   
-                  // Determine the batting order
-                  const battedFirstTeamId = firstInnings.battingTeamId;
-                  const battedSecondTeamId = secondInnings.battingTeamId;
-                  
-                  const battedFirstTeam = battedFirstTeamId === match.team1Id ? team1 : team2;
-                  const battedSecondTeam = battedSecondTeamId === match.team1Id ? team1 : team2;
-                  
-                  const firstInningsRuns = firstInnings.totalRuns || 0;
-                  const secondInningsRuns = secondInnings.totalRuns || 0;
-                  const secondInningsWickets = secondInnings.totalWickets || 0;
-                  
-                  // Team batting second wins if they scored more than or equal to target
-                  if (secondInningsRuns > firstInningsRuns) {
-                    const wicketsRemaining = 10 - secondInningsWickets;
-                    resultText = `${battedSecondTeam.shortName || battedSecondTeam.name} won by ${wicketsRemaining} wicket${wicketsRemaining === 1 ? '' : 's'}`;
-                  } else if (firstInningsRuns > secondInningsRuns) {
-                    // Team batting first wins by runs
-                    const runMargin = firstInningsRuns - secondInningsRuns;
-                    resultText = `${battedFirstTeam.shortName || battedFirstTeam.name} won by ${runMargin} run${runMargin === 1 ? '' : 's'}`;
-                  } else {
-                    resultText = 'Match tied';
+                  // Check if one team didn't bat (match withdrawn/abandoned)
+                  if (!team1Innings || !team2Innings) {
+                    resultText = 'Match withdrawn due to rain';
+                  } else if (firstInnings && secondInnings) {
+                    // Determine which team batted first and second
+                    const team1Runs = team1Innings?.totalRuns || 0;
+                    const team2Runs = team2Innings?.totalRuns || 0;
+                    const team1Wickets = team1Innings?.totalWickets || 0;
+                    const team2Wickets = team2Innings?.totalWickets || 0;
+                    
+                    // Determine the batting order
+                    const battedFirstTeamId = firstInnings.battingTeamId;
+                    const battedSecondTeamId = secondInnings.battingTeamId;
+                    
+                    const battedFirstTeam = battedFirstTeamId === match.team1Id ? team1 : team2;
+                    const battedSecondTeam = battedSecondTeamId === match.team1Id ? team1 : team2;
+                    
+                    const firstInningsRuns = firstInnings.totalRuns || 0;
+                    const secondInningsRuns = secondInnings.totalRuns || 0;
+                    const secondInningsWickets = secondInnings.totalWickets || 0;
+                    
+                    // Team batting second wins if they scored more than or equal to target
+                    if (secondInningsRuns > firstInningsRuns) {
+                      const wicketsRemaining = 10 - secondInningsWickets;
+                      resultText = `${battedSecondTeam.shortName || battedSecondTeam.name} won by ${wicketsRemaining} wicket${wicketsRemaining === 1 ? '' : 's'}`;
+                    } else if (firstInningsRuns > secondInningsRuns) {
+                      // Team batting first wins by runs
+                      const runMargin = firstInningsRuns - secondInningsRuns;
+                      resultText = `${battedFirstTeam.shortName || battedFirstTeam.name} won by ${runMargin} run${runMargin === 1 ? '' : 's'}`;
+                    } else {
+                      resultText = 'Match tied';
+                    }
+                  } else if (winnerTeam && match.winMargin) {
+                    resultText = `${winnerTeam.shortName || winnerTeam.name} won by ${match.winMargin}`;
                   }
-                } else if (winnerTeam && match.winMargin) {
-                  resultText = `${winnerTeam.shortName || winnerTeam.name} won by ${match.winMargin}`;
-                }
 
-                return (
-                  <Link to={`/match/${match.id}`} key={match.id} className="block">
+                  return (
+                    <Link to={`/match/${match.id}`} className="block h-full">
                     <Card className="group h-full bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border hover:border-slate-400">
                       <CardHeader className="pb-4">
                         <div className="flex items-center justify-between mb-3">
@@ -588,19 +610,15 @@ const HomePage = () => {
                       </CardContent>
                     </Card>
                   </Link>
-                );
-              })}
+                  );
+                })()}
+                </div>
+              ))}
+              </div>
             </div>
           </div>
         )}
       </div>
-      
-      {/* Footer */}
-      <footer className="mt-16 bg-gradient-to-r from-gray-800 to-gray-900 text-white py-8 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <p className="text-gray-300">© 2025 CricScore. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 };

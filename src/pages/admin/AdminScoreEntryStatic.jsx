@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 import { matchService, ballService, playerService, inningsService } from '../../api/services';
 import AdminLayout from '../../components/admin/AdminLayout';
+import CricketLoader from '../../components/CricketLoader';
 
 const AdminScoreEntryStatic = () => {
   const { matchId } = useParams();
@@ -256,9 +257,7 @@ const AdminScoreEntryStatic = () => {
   if (loading) {
     return (
       <AdminLayout title="Score Entry" subtitle="Record ball-by-ball updates for the selected match.">
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-          <CircularProgress />
-        </Box>
+        <CricketLoader />
       </AdminLayout>
     );
   }

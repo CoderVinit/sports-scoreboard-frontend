@@ -298,7 +298,8 @@ try {
 
 ### API Endpoints to Test
 - GET `http://localhost:5000/api/matches/live`
-- GET `http://localhost:5000/api/matches/upcoming`
+- GET `
+`
 - POST `http://localhost:5000/api/auth/login`
 - GET `http://localhost:5000/api/matches/:id/statistics`
 - POST `http://localhost:5000/api/balls`

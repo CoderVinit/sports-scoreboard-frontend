@@ -13,6 +13,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { matchService, playerService } from '../api/services';
 import { getSocket } from '../utils/socket';
+import CricketLoader from '../components/CricketLoader';
 
 // Helper function to convert hex to rgba
 const hexToRgba = (hex, alpha = 1) => {
@@ -284,13 +285,7 @@ const MatchDetails = () => {
   }, [matchId]);
 
   if (loading) {
-    return (
-      <Container>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-          <CircularProgress />
-        </Box>
-      </Container>
-    );
+    return <CricketLoader />;
   }
 
   if (!match) {
