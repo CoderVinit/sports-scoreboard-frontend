@@ -523,14 +523,22 @@ const MatchDetails = () => {
         </Box>
 
         {/* Match Status */}
-        {resultText ? (
+        {match.status === 'completed' && resultText ? (
           <Typography variant="body1" sx={{ mb: 3, fontWeight: 600, fontSize: '0.95rem' }}>
             {resultText}
           </Typography>
-        ) : secondInnings?.target && secondInningsBattingTeam && (
-          <Typography variant="body1" sx={{ mb: 3, fontWeight: 600, fontSize: '0.95rem' }}>
-            {secondInningsBattingTeam?.shortName || secondInningsBattingTeam?.name} need {(secondInnings.target - secondInnings.totalRuns)} runs to win
-          </Typography>
+        ) : (
+          (
+            secondInnings?.target &&
+            secondInningsBattingTeam &&
+            typeof secondInnings.target === 'number' &&
+            secondInnings.target > 0 &&
+            (secondInnings.target - secondInnings.totalRuns) > 0
+          ) ? (
+            <Typography variant="body1" sx={{ mb: 3, fontWeight: 600, fontSize: '0.95rem' }}>
+              {secondInningsBattingTeam?.shortName || secondInningsBattingTeam?.name} need {(secondInnings.target - secondInnings.totalRuns)} runs to win
+            </Typography>
+          ) : null
         )}
 
         {/* Toss Info */}
