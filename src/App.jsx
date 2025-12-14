@@ -1,8 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Container, Box } from '@mui/material';
 import { useEffect } from 'react';
 import Navbar from './components/Navbar';
-import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import LiveScoreboard from './pages/LiveScoreboardNew';
 import MatchDetailsStatic from './pages/MatchDetailsStatic';
@@ -26,9 +24,9 @@ function App() {
 
   return (
     <Router>
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <div className="flex flex-col min-h-screen">
         <Navbar />
-        <Box component="main" sx={{ flexGrow: 1 }}>
+        <main className="flex-grow pb-8">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/live" element={<LiveScoreboard />} />
@@ -63,9 +61,8 @@ function App() {
               </AdminRoute>
             } />
           </Routes>
-        </Box>
-        <Footer />
-      </Box>
+        </main>
+      </div>
     </Router>
   );
 }

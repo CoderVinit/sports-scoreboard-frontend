@@ -13,13 +13,21 @@ const Avatar = React.forwardRef(({ className, ...props }, ref) => (
 ))
 Avatar.displayName = "Avatar"
 
-const AvatarImage = React.forwardRef(({ className, ...props }, ref) => (
-  <img
-    ref={ref}
-    className={cn("aspect-square h-full w-full", className)}
-    {...props}
-  />
-))
+const AvatarImage = React.forwardRef(({ className, src, ...props }, ref) => {
+  // Don't render if src is empty or null
+  if (!src || src === '') {
+    return null;
+  }
+  
+  return (
+    <img
+      ref={ref}
+      className={cn("aspect-square h-full w-full", className)}
+      src={src}
+      {...props}
+    />
+  );
+})
 AvatarImage.displayName = "AvatarImage"
 
 const AvatarFallback = React.forwardRef(({ className, ...props }, ref) => (

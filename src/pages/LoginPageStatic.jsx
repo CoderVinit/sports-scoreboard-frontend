@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import {
-  Container, Paper, TextField, Button, Typography, Box,
-  Alert, CircularProgress
-} from '@mui/material';
-import SportsCricketIcon from '@mui/icons-material/SportsCricket';
+import { Trophy, LogIn } from 'lucide-react';
 import { loginUser } from '../features/auth/authSlice';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const LoginPageStatic = () => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
@@ -37,72 +37,86 @@ const LoginPageStatic = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ py: 8 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Box sx={{ textAlign: 'center', mb: 3 }}>
-          <SportsCricketIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-          <Typography variant="h4" component="h1" gutterBottom>
-            Login
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+    <div className="max-w-md mx-auto px-6 py-16">
+      <Card className="shadow-lg">
+        <CardHeader className="text-center">
+          <Trophy className="w-16 h-16 mx-auto mb-4 text-blue-600" />
+          <CardTitle className="text-3xl">Login</CardTitle>
+          <CardDescription>
             Sign in to access Cricket Scoreboard
-          </Typography>
-        </Box>
-
-        <Alert severity="info" sx={{ mb: 2 }}>
-          <strong>Demo Credentials:</strong><br />
-          Admin: username: <code>admin</code>, password: <code>admin123</code><br />
-          User: username: <code>user</code>, password: <code>user123</code>
-        </Alert>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {typeof error === 'string' ? error : error?.message || 'An error occurred'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert className="mb-4 bg-blue-50 border-blue-200">
+            <AlertDescription>
+              <strong>Demo Credentials:</strong><br />
+              Admin: username: <code className="text-xs bg-blue-100 px-1 py-0.5 rounded">admin</code>, password: <code className="text-xs bg-blue-100 px-1 py-0.5 rounded">admin123</code><br />
+              User: username: <code className="text-xs bg-blue-100 px-1 py-0.5 rounded">user</code>, password: <code className="text-xs bg-blue-100 px-1 py-0.5 rounded">user123</code>
+            </AlertDescription>
           </Alert>
-        )}
 
-        <form onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            label="Username"
-            variant="outlined"
-            margin="normal"
-            value={credentials.username}
-            onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-            required
-          />
-          <TextField
-            fullWidth
-            label="Password"
-            type="password"
-            variant="outlined"
-            margin="normal"
-            value={credentials.password}
-            onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-            required
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            size="large"
-            sx={{ mt: 3, mb: 2 }}
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
-          </Button>
-        </form>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>
+                {typeof error === 'string' ? error : error?.message || 'An error occurred'}
+              </AlertDescription>
+            </Alert>
+          )}
 
-        <Box sx={{ textAlign: 'center', mt: 2 }}>
-          <Typography variant="body2">
-            Don't have an account?{' '}
-            <Link to="/register" style={{ color: '#1976d2', textDecoration: 'none' }}>
-              Register here
-            </Link>
-          </Typography>
-        </Box>
-      </Paper>
-    </Container>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="username" className="text-sm font-medium">
+                Username
+              </label>
+              <Input
+                id="username"
+                type="text"
+                value={credentials.username}
+                onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
+                required
+                className="h-11"
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium">
+                Password
+              </label>
+              <Input
+                id="password"
+                type="password"
+                value={credentials.password}
+                onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                required
+                className="h-11"
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full h-11 text-base font-semibold"
+              disabled={loading}
+            >
+              {loading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              ) : (
+                <>
+                  <LogIn className="w-5 h-5 mr-2" />
+                  Login
+                </>
+              )}
+            </Button>
+          </form>
+
+          <div className="text-center mt-6">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <Link to="/register" className="text-blue-600 hover:underline font-medium">
+                Register here
+              </Link>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
