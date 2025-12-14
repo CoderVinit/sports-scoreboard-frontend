@@ -485,66 +485,70 @@ const AdminPlayers = () => {
                 placeholder="e.g., Indian"
                 className="h-11"
               />
-            </Grid>
-            <Grid item xs={12}>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Player Photo</label>
               <Button
-                variant="outlined"
-                component="label"
-                size="small"
+                variant="outline"
+                className="h-11"
+                asChild={false}
               >
-                {newPlayer.photo ? 'Change Photo' : 'Upload Photo'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
+                <label className="flex items-center gap-2 cursor-pointer">
+                  {newPlayer.photo ? 'Change Photo' : 'Upload Photo'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
 
-                    const formData = new FormData();
-                    formData.append('image', file);
+                      const formData = new FormData();
+                      formData.append('image', file);
 
-                    try {
-                      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/upload/image`, {
-                        method: 'POST',
-                        body: formData
-                      });
+                      try {
+                        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'}/upload/image`, {
+                          method: 'POST',
+                          body: formData
+                        });
 
-                      const data = await res.json();
-                      if (data.success && data.url) {
-                        setNewPlayer({ ...newPlayer, photo: data.url });
+                        const data = await res.json();
+                        if (data.success && data.url) {
+                          setNewPlayer({ ...newPlayer, photo: data.url });
+                        }
+                      } catch (err) {
+                        console.error('Photo upload failed', err);
                       }
-                    } catch (err) {
-                      console.error('Photo upload failed', err);
-                    }
-                  }}
-                />
+                    }}
+                  />
+                </label>
               </Button>
+
               {newPlayer.photo && (
-                <>
-                  <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
-                    Photo preview:
-                  </Typography>
+                <div className="mt-2">
+                  <p className="text-xs text-gray-500 mb-1">Photo preview:</p>
                   <img
                     src={newPlayer.photo}
                     alt="Player photo preview"
-                    style={{ marginTop: 4, width: 70, height: 70, objectFit: 'cover', borderRadius: '50%', border: '1px solid #e2e8f0' }}
+                    className="w-20 h-20 rounded-full object-cover border border-gray-200"
                   />
-                </>
+                </div>
               )}
-            </Grid>
-          </Grid>
+            </div>
+          </div>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
+        <DialogFooter className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={handleCloseDialog}>
+            Cancel
+          </Button>
           <Button 
-            onClick={handleCreatePlayer} 
-            variant="contained" 
+            onClick={handleCreatePlayer}
             disabled={loading || !newPlayer.name || !newPlayer.teamId}
           >
             {loading ? 'Saving...' : editMode ? 'Update Player' : 'Create Player'}
           </Button>
-        </DialogActions>
+        </DialogFooter>
       </Dialog>
     </AdminLayout>
   );

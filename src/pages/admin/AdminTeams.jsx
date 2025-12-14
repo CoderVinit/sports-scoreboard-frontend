@@ -1,39 +1,37 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Plus, Edit, Users, Trophy } from 'lucide-react';
+import {
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Grid,
+  Button as MuiButton,
+} from '@mui/material';
+import { Plus, Users, Edit } from 'lucide-react';
 import { fetchTeams, createTeam } from '../../features/teams/teamSlice';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
 import { Card, CardContent } from '../../components/ui/card';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '../../components/ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../../components/ui/dialog';
-import { Input } from '../../components/ui/input';
-import { teamService } from '../../api/services';
-import CricketLoader from '../../components/CricketLoader';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../components/ui/table';
 import { API_BASE_URL } from '../../config/api.config';
 
 const AdminTeams = () => {
   const dispatch = useDispatch();
-  const { teams, loading } = useSelector((state) => state.teams);
+  const { teams } = useSelector((state) => state.teams);
   const [openDialog, setOpenDialog] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
-  const [logoFile, setLogoFile] = useState(null);
   const [newTeam, setNewTeam] = useState({
     name: '',
     shortName: '',
@@ -44,41 +42,11 @@ const AdminTeams = () => {
     dispatch(fetchTeams());
   }, [dispatch]);
 
-  if (loading && (!teams || teams.length === 0)) {
-    return (
-      <AdminLayout
-        title="Teams"
-        subtitle="Add and manage teams used across all matches."
-      >
-        <CricketLoader />
-      </AdminLayout>
-    );
-  }
-
   const handleCreateTeam = async () => {
-    try {
-      const formData = new FormData();
-      formData.append('name', newTeam.name);
-      formData.append('shortName', newTeam.shortName);
-
-      if (logoFile) {
-        formData.append('logo', logoFile);
-      }
-
-      const response = await fetch(`${API_BASE_URL}/teams`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        setOpenDialog(false);
-        setNewTeam({ name: '', shortName: '', logo: '' });
-        setLogoFile(null);
-        dispatch(fetchTeams());
-      }
-    } catch (error) {
-      console.error('Error creating team:', error);
-    }
+    await dispatch(createTeam(newTeam));
+    setOpenDialog(false);
+    setNewTeam({ name: '', shortName: '', logo: '' });
+    dispatch(fetchTeams());
   };
 
   const handleEditTeam = (team) => {
@@ -88,28 +56,18 @@ const AdminTeams = () => {
       shortName: team.shortName,
       logo: team.logo || ''
     });
-    setLogoFile(null);
     setEditMode(true);
     setOpenDialog(true);
   };
 
   const handleUpdateTeam = async () => {
     try {
-      const formData = new FormData();
-      formData.append('name', newTeam.name);
-      formData.append('shortName', newTeam.shortName);
-
-      if (selectedTeam && selectedTeam.logo) {
-        formData.append('existingLogo', selectedTeam.logo);
-      }
-
-      if (logoFile) {
-        formData.append('logo', logoFile);
-      }
-
       const response = await fetch(`${API_BASE_URL}/teams/${selectedTeam.id}`, {
         method: 'PUT',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newTeam),
       });
 
       if (response.ok) {
@@ -126,7 +84,6 @@ const AdminTeams = () => {
     setEditMode(false);
     setSelectedTeam(null);
     setNewTeam({ name: '', shortName: '', logo: '' });
-    setLogoFile(null);
   };
 
   const handleSubmit = () => {
@@ -147,14 +104,12 @@ const AdminTeams = () => {
         <CardContent className="p-6">
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-3xl font-bold mb-2">
-                Manage Teams
-              </h2>
+              <h2 className="text-3xl font-bold mb-2">Manage Teams</h2>
               <p className="text-green-100">
                 {teams?.length || 0} {teams?.length === 1 ? 'team' : 'teams'} registered
               </p>
             </div>
-            <Button 
+            <Button
               onClick={() => setOpenDialog(true)}
               className="bg-white text-green-600 hover:bg-green-50 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 h-12 px-6"
             >
@@ -165,7 +120,7 @@ const AdminTeams = () => {
         </CardContent>
       </Card>
 
-      {/* Classic Teams Table */}
+      {/* Teams Table */}
       <Card className="bg-white shadow-md border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <Table className="w-full">
@@ -174,24 +129,25 @@ const AdminTeams = () => {
                 <TableHead className="h-12 px-6 text-gray-700 font-semibold text-sm uppercase tracking-wider">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4" />
-                    Team Name
+                    Team
                   </div>
                 </TableHead>
-                <TableHead className="h-12 px-6 text-gray-700 font-semibold text-sm uppercase tracking-wider">Short Name</TableHead>
                 <TableHead className="h-12 px-6 text-gray-700 font-semibold text-sm uppercase tracking-wider">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    Players Count
-                  </div>
+                  Short Name
                 </TableHead>
-                <TableHead className="h-12 px-6 text-center text-gray-700 font-semibold text-sm uppercase tracking-wider">Actions</TableHead>
+                <TableHead className="h-12 px-6 text-gray-700 font-semibold text-sm uppercase tracking-wider">
+                  Players
+                </TableHead>
+                <TableHead className="h-12 px-6 text-center text-gray-700 font-semibold text-sm uppercase tracking-wider">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {teams && Array.isArray(teams) && teams.length > 0 ? (
                 teams.map((team, index) => (
-                  <TableRow 
-                    key={team.id} 
+                  <TableRow
+                    key={team.id}
                     className={`
                       border-b border-gray-200
                       ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
@@ -200,18 +156,14 @@ const AdminTeams = () => {
                   >
                     <TableCell className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="bg-gray-200 p-2 rounded">
-                          <Users className="w-5 h-5 text-gray-600" />
-                        </div>
+                        <Avatar className="h-10 w-10 border border-gray-300 bg-white">
+                          {team.logo ? <AvatarImage src={team.logo} alt={team.name} /> : null}
+                          <AvatarFallback className="bg-gray-200 text-gray-700 font-semibold text-sm">
+                            {team.shortName?.charAt(0) || team.name?.charAt(0) || 'T'}
+                          </AvatarFallback>
+                        </Avatar>
                         <div>
-                          <div className="font-semibold text-gray-900 text-sm">
-                            {team.name}
-                          </div>
-                          {team.logo && (
-                            <div className="text-xs text-gray-500 mt-0.5">
-                              Logo configured
-                            </div>
-                          )}
+                          <div className="font-semibold text-gray-900 text-sm">{team.name}</div>
                         </div>
                       </div>
                     </TableCell>
@@ -219,17 +171,16 @@ const AdminTeams = () => {
                       <span className="font-mono text-gray-700 text-sm font-semibold">{team.shortName}</span>
                     </TableCell>
                     <TableCell className="px-6 py-4">
-                      <span className="text-gray-700 text-sm font-medium">{team.playerCount || 0}</span>
+                      <span className="text-gray-700 text-sm">{team.playerCount || 0}</span>
                     </TableCell>
                     <TableCell className="px-6 py-4 text-center">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleEditTeam(team)}
-                        className="hover:bg-gray-100 font-medium"
+                        className="h-9 w-9 p-0 hover:bg-blue-600 hover:text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                       >
-                        <Edit className="w-4 h-4 mr-2" />
-                        Edit
+                        <Edit className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -254,44 +205,46 @@ const AdminTeams = () => {
         </div>
       </Card>
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={openDialog} onOpenChange={handleCloseDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
-              {editMode ? 'Edit Team' : 'Add New Team'}
-            </DialogTitle>
-            <DialogDescription className="text-base">
-              Enter the official details for this team as they should appear across the scoreboard.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid grid-cols-1 gap-6 py-6">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <Trophy className="w-4 h-4" />
-                Team Name
-              </label>
-              <Input
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>{editMode ? 'Edit Team' : 'Add New Team'}</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Enter the official details for this team as they should appear across the scoreboard.
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Team Name"
                 value={newTeam.name}
+                margin="dense"
+                size="small"
                 onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
-                placeholder="Enter team name"
-                className="h-11"
                 required
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Short Name (3-4 letters)</label>
-              <Input
-                value={newTeam.shortName}
-                onChange={(e) => setNewTeam({ ...newTeam, shortName: e.target.value.toUpperCase() })}
               />
             </Grid>
             <Grid item xs={12}>
-              <Button
-                variant="outlined"
-                component="label"
+              <TextField
+                fullWidth
+                label="Short Name (3-4 letters)"
+                value={newTeam.shortName}
+                margin="dense"
                 size="small"
-              >
+                inputProps={{ maxLength: 4 }}
+                helperText="Shown on scorecards and tables (e.g. IND, AUS)."
+                onChange={(e) => setNewTeam({ ...newTeam, shortName: e.target.value.toUpperCase() })}
+              />
+            </Grid>
+          </Grid>
+
+          <div className="mt-4 space-y-2">
+            <label className="text-sm font-semibold text-gray-700">Team Logo</label>
+            <Button
+              variant="outline"
+              className="h-11"
+              asChild={false}
+            >
+              <label className="flex items-center gap-2 cursor-pointer">
                 {newTeam.logo ? 'Change Logo' : 'Upload Logo'}
                 <input
                   type="file"
@@ -301,37 +254,48 @@ const AdminTeams = () => {
                     const file = e.target.files?.[0];
                     if (!file) return;
 
-                    // For both create and update, keep file in state and preview locally
-                    setLogoFile(file);
-                    const previewUrl = URL.createObjectURL(file);
-                    setNewTeam({ ...newTeam, logo: previewUrl });
+                    const formData = new FormData();
+                    formData.append('image', file);
+
+                    try {
+                      const res = await fetch(`${API_BASE_URL || 'http://localhost:3000/api'}/upload/image`, {
+                        method: 'POST',
+                        body: formData,
+                      });
+
+                      const data = await res.json();
+                      if (data.success && data.url) {
+                        setNewTeam({ ...newTeam, logo: data.url });
+                      }
+                    } catch (err) {
+                      console.error('Logo upload failed', err);
+                    }
                   }}
                 />
-              </Button>
-              {newTeam.logo && (
-                <>
-                  <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
-                    Logo preview:
-                  </Typography>
-                  <img
-                    src={newTeam.logo}
-                    alt="Team logo preview"
-                    style={{ marginTop: 4, width: 60, height: 60, objectFit: 'cover', borderRadius: 8, border: '1px solid #e2e8f0' }}
-                  />
-                </>
-              )}
-            </Grid>
-          </Grid>
+              </label>
+            </Button>
+
+            {newTeam.logo && (
+              <div className="mt-2">
+                <p className="text-xs text-gray-500 mb-1">Logo preview:</p>
+                <img
+                  src={newTeam.logo}
+                  alt="Team logo preview"
+                  className="w-16 h-16 rounded-lg object-cover border border-gray-200"
+                />
+              </div>
+            )}
+          </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button
+          <MuiButton onClick={handleCloseDialog}>Cancel</MuiButton>
+          <MuiButton
             onClick={handleSubmit}
             variant="contained"
             disabled={!newTeam.name.trim() || !newTeam.shortName.trim()}
           >
             {editMode ? 'Update Team' : 'Add Team'}
-          </Button>
+          </MuiButton>
         </DialogActions>
       </Dialog>
     </AdminLayout>
