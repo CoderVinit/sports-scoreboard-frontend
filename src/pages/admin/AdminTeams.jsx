@@ -8,6 +8,7 @@ import {
 import { fetchTeams, createTeam } from '../../features/teams/teamSlice';
 import AddIcon from '@mui/icons-material/Add';
 import AdminLayout from '../../components/admin/AdminLayout';
+import { API_BASE_URL } from '../../config/api.config';
 
 const AdminTeams = () => {
   const dispatch = useDispatch();
@@ -15,6 +16,7 @@ const AdminTeams = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
+  const [logoFile, setLogoFile] = useState(null);
   const [newTeam, setNewTeam] = useState({
     name: '',
     shortName: '',
@@ -26,10 +28,29 @@ const AdminTeams = () => {
   }, [dispatch]);
 
   const handleCreateTeam = async () => {
-    await dispatch(createTeam(newTeam));
-    setOpenDialog(false);
-    setNewTeam({ name: '', shortName: '', logo: '' });
-    dispatch(fetchTeams());
+    try {
+      const formData = new FormData();
+      formData.append('name', newTeam.name);
+      formData.append('shortName', newTeam.shortName);
+
+      if (logoFile) {
+        formData.append('logo', logoFile);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/teams`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        setOpenDialog(false);
+        setNewTeam({ name: '', shortName: '', logo: '' });
+        setLogoFile(null);
+        dispatch(fetchTeams());
+      }
+    } catch (error) {
+      console.error('Error creating team:', error);
+    }
   };
 
   const handleEditTeam = (team) => {
@@ -39,18 +60,28 @@ const AdminTeams = () => {
       shortName: team.shortName,
       logo: team.logo || ''
     });
+    setLogoFile(null);
     setEditMode(true);
     setOpenDialog(true);
   };
 
   const handleUpdateTeam = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/teams/${selectedTeam.id}`, {
+      const formData = new FormData();
+      formData.append('name', newTeam.name);
+      formData.append('shortName', newTeam.shortName);
+
+      if (selectedTeam && selectedTeam.logo) {
+        formData.append('existingLogo', selectedTeam.logo);
+      }
+
+      if (logoFile) {
+        formData.append('logo', logoFile);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/teams/${selectedTeam.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newTeam),
+        body: formData,
       });
 
       if (response.ok) {
@@ -67,6 +98,7 @@ const AdminTeams = () => {
     setEditMode(false);
     setSelectedTeam(null);
     setNewTeam({ name: '', shortName: '', logo: '' });
+    setLogoFile(null);
   };
 
   const handleSubmit = () => {
@@ -170,15 +202,39 @@ const AdminTeams = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Logo URL (optional)"
-                value={newTeam.logo}
-                margin="dense"
+              <Button
+                variant="outlined"
+                component="label"
                 size="small"
-                type="url"
-                onChange={(e) => setNewTeam({ ...newTeam, logo: e.target.value })}
-              />
+              >
+                {newTeam.logo ? 'Change Logo' : 'Upload Logo'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    // For both create and update, keep file in state and preview locally
+                    setLogoFile(file);
+                    const previewUrl = URL.createObjectURL(file);
+                    setNewTeam({ ...newTeam, logo: previewUrl });
+                  }}
+                />
+              </Button>
+              {newTeam.logo && (
+                <>
+                  <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+                    Logo preview:
+                  </Typography>
+                  <img
+                    src={newTeam.logo}
+                    alt="Team logo preview"
+                    style={{ marginTop: 4, width: 60, height: 60, objectFit: 'cover', borderRadius: 8, border: '1px solid #e2e8f0' }}
+                  />
+                </>
+              )}
             </Grid>
           </Grid>
         </DialogContent>

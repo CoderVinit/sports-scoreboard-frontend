@@ -408,15 +408,51 @@ const AdminPlayers = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Photo URL"
-                value={newPlayer.photo}
-                margin="dense"
+              <Button
+                variant="outlined"
+                component="label"
                 size="small"
-                type="url"
-                onChange={(e) => setNewPlayer({ ...newPlayer, photo: e.target.value })}
-              />
+              >
+                {newPlayer.photo ? 'Change Photo' : 'Upload Photo'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    const formData = new FormData();
+                    formData.append('image', file);
+
+                    try {
+                      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/upload/image`, {
+                        method: 'POST',
+                        body: formData
+                      });
+
+                      const data = await res.json();
+                      if (data.success && data.url) {
+                        setNewPlayer({ ...newPlayer, photo: data.url });
+                      }
+                    } catch (err) {
+                      console.error('Photo upload failed', err);
+                    }
+                  }}
+                />
+              </Button>
+              {newPlayer.photo && (
+                <>
+                  <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+                    Photo preview:
+                  </Typography>
+                  <img
+                    src={newPlayer.photo}
+                    alt="Player photo preview"
+                    style={{ marginTop: 4, width: 70, height: 70, objectFit: 'cover', borderRadius: '50%', border: '1px solid #e2e8f0' }}
+                  />
+                </>
+              )}
             </Grid>
           </Grid>
         </DialogContent>
