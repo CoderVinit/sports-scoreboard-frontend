@@ -116,29 +116,39 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
-      <div className="w-full">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 via-indigo-50/20 to-slate-50 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
         {/* Featured Match Countdown Hero */}
         {featuredMatch && (
-          <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white overflow-hidden mb-8">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NCAwLTE4IDguMDYtMTggMThzOC4wNiAxOCAxOCAxOCAxOC04LjA2IDE4LTE4LTguMDYtMTgtMTgtMTh6bTAgMzJjLTcuNzMgMC0xNC02LjI3LTE0LTE0czYuMjctMTQgMTQtMTQgMTQgNi4yNyAxNCAxNC02LjI3IDE0LTE0IDE0eiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIvPjwvZz48L3N2Zz4=')] opacity-10"></div>
+          <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 via-indigo-700 to-purple-800 text-white overflow-hidden mb-12 shadow-2xl rounded-xl">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NCAwLTE4IDguMDYtMTggMThzOC4wNiAxOCAxOCAxOCAxOC04LjA2IDE4LTE4LTguMDYtMTgtMTgtMTh6bTAgMzJjLTcuNzMgMC0xNC02LjI3LTE0LTE0czYuMjctMTQgMTQtMTQgMTQgNi4yNyAxNCAxNC02LjI3IDE0LTE0IDE0eiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIvPjwvZz48L3N2Zz4=')] opacity-20"></div>
             
-            <div className="relative max-w-6xl mx-auto px-6 py-6">
+            {/* Floating orbs */}
+            <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl animate-pulse"></div>
+            <div className="absolute bottom-10 right-10 w-40 h-40 bg-purple-400/20 rounded-full blur-3xl animate-pulse delay-700"></div>
+            
+            <div className="relative mx-auto px-6 py-10">
               {/* Countdown Timer */}
-              <div className="flex justify-center gap-3 mb-6">
+              <div className="flex justify-center gap-4 mb-8">
                 {[
                   { value: countdown.days, label: 'days' },
                   { value: countdown.hours, label: 'hours' },
                   { value: countdown.minutes, label: 'minutes' },
                   { value: countdown.seconds, label: 'seconds' }
                 ].map((item, idx) => (
-                  <div key={idx} className="text-center">
-                    <div className="bg-white/15 backdrop-blur-sm rounded-lg px-3 py-2 min-w-[60px] border border-white/30">
-                      <div className="text-3xl font-bold tabular-nums">
+                  <div key={idx} className="text-center transform hover:scale-105 transition-transform duration-300">
+                    <div className="bg-white/20 backdrop-blur-md rounded-xl px-4 py-3 min-w-[70px] border border-white/40 shadow-lg hover:bg-white/25 transition-all duration-300">
+                      <div className="text-4xl font-extrabold tabular-nums bg-gradient-to-b from-white to-blue-100 bg-clip-text text-transparent drop-shadow-lg">
                         {String(item.value).padStart(2, '0')}
                       </div>
                     </div>
-                    <div className="text-xs mt-1 text-blue-100 uppercase tracking-wider">
+                    <div className="text-xs mt-2 text-blue-100 uppercase tracking-widest font-semibold">
                       {item.label}
                     </div>
                   </div>
@@ -146,36 +156,37 @@ const HomePage = () => {
               </div>
               
               {/* Match Info */}
-              <div className="text-center mb-4">
-                <div className="inline-block bg-white/15 backdrop-blur-sm px-4 py-1 rounded-full text-sm mb-3 border border-white/30">
+              <div className="text-center mb-6">
+                <div className="inline-block bg-white/20 backdrop-blur-md px-5 py-2 rounded-full text-sm font-semibold mb-4 border border-white/40 shadow-lg">
+                  <Clock className="w-4 h-4 inline mr-2" />
                   {new Date(featuredMatch.matchDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
                 </div>
               </div>
               
               {/* Teams */}
-              <div className="flex items-center justify-center gap-6 mb-6">
-                <div className="text-center">
+              <div className="flex items-center justify-center gap-8 mb-8">
+                <div className="text-center transform hover:scale-105 transition-transform duration-300">
                   {renderTeamLogo(featuredMatch.team1, 'Team 1')}
-                  <div className="text-xl font-bold">{featuredMatch.team1?.name || 'Team 1'}</div>
+                  <div className="text-2xl font-extrabold mt-2 drop-shadow-lg">{featuredMatch.team1?.name || 'Team 1'}</div>
                 </div>
                 
-                <div className="text-4xl font-bold px-4">VS</div>
+                <div className="text-5xl font-black px-6 bg-white/10 backdrop-blur-sm rounded-full py-2 border border-white/30">VS</div>
                 
-                <div className="text-center">
+                <div className="text-center transform hover:scale-105 transition-transform duration-300">
                   {renderTeamLogo(featuredMatch.team2, 'Team 2')}
-                  <div className="text-xl font-bold">{featuredMatch.team2?.name || 'Team 2'}</div>
+                  <div className="text-2xl font-extrabold mt-2 drop-shadow-lg">{featuredMatch.team2?.name || 'Team 2'}</div>
                 </div>
               </div>
               
               {/* Match Details */}
-              <div className="flex items-center justify-center gap-6 text-sm text-blue-100">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center gap-8 text-sm text-blue-100">
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
                   <Calendar className="w-4 h-4" />
-                  <span>{new Date(featuredMatch.matchDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                  <span className="font-medium">{new Date(featuredMatch.matchDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
                   <MapPin className="w-4 h-4" />
-                  <span>{featuredMatch.venue}</span>
+                  <span className="font-medium">{featuredMatch.venue}</span>
                 </div>
               </div>
             </div>
@@ -184,16 +195,18 @@ const HomePage = () => {
 
         {/* Original Hero Section for when no featured match */}
         {!featuredMatch && (
-          <Card className="mb-12 border-none bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-2xl overflow-hidden rounded-none">
-            <CardContent className="p-8 md:p-12 text-center relative">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mt-32 -mr-32"></div>
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -mb-24 -ml-24"></div>
+          <Card className="mb-12 border-none bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white shadow-2xl overflow-hidden rounded-xl relative">
+            <CardContent className="p-8 md:p-16 text-center relative z-10">
+              <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -mt-48 -mr-48 animate-pulse"></div>
+              <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl -mb-40 -ml-40 animate-pulse delay-1000"></div>
               <div className="relative z-10">
-                <Sparkles className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-6 animate-pulse" />
-                <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">
+                <div className="inline-block p-4 bg-white/20 backdrop-blur-md rounded-2xl mb-6 border border-white/30 shadow-xl">
+                  <Sparkles className="w-16 h-16 md:w-20 md:h-20 text-white animate-pulse" />
+                </div>
+                <h1 className="text-5xl md:text-6xl font-extrabold mb-6 tracking-tight bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent drop-shadow-2xl">
                   Live Cricket Scoreboard
                 </h1>
-                <p className="text-lg md:text-xl text-blue-50 max-w-2xl mx-auto leading-relaxed">
+                <p className="text-xl md:text-2xl text-blue-50 max-w-3xl mx-auto leading-relaxed font-medium">
                   Experience real-time match updates, comprehensive statistics, and thrilling cricket action
                 </p>
               </div>
@@ -203,16 +216,18 @@ const HomePage = () => {
 
         {/* Live Matches */}
         {liveMatches && liveMatches.length > 0 && (
-          <div className="mb-12 px-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <Radio className="w-6 h-6 text-red-600" />
+          <div className="mb-16">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg">
+                <Radio className="w-7 h-7 text-white" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900">Live Matches</h2>
-              <Badge variant="destructive" className="animate-pulse">
-                <span className="relative flex h-2 w-2 mr-1.5">
+              <h2 className="text-4xl font-extrabold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+                Live Matches
+              </h2>
+              <Badge variant="destructive" className="animate-pulse px-3 py-1 text-sm font-bold shadow-lg">
+                <span className="relative flex h-2.5 w-2.5 mr-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
                 </span>
                 LIVE
               </Badge>
@@ -270,11 +285,14 @@ const HomePage = () => {
                 }
                 
                 return (
-                  <Link to={`/match/${match.id}`} key={match.id} className="block">
-                    <Card className="h-full bg-white hover:shadow-lg transition-shadow duration-200 border border-gray-200 relative overflow-hidden">
+                  <Link to={`/match/${match.id}`} key={match.id} className="block group">
+                    <Card className="h-full bg-white hover:shadow-2xl transition-all duration-300 border border-gray-200 relative overflow-hidden group-hover:border-blue-300 group-hover:-translate-y-1">
+                      {/* Gradient overlay on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-indigo-50/0 group-hover:from-blue-50/50 group-hover:to-indigo-50/30 transition-all duration-300 pointer-events-none"></div>
+                      
                       {/* Live Badge */}
-                      <Badge className="absolute top-3 right-3 bg-red-600 text-white text-xs px-2 py-0.5 flex items-center gap-1 z-10 animate-pulse">
-                        <Radio className="w-3 h-3" />
+                      <Badge className="absolute top-4 right-4 bg-gradient-to-r from-red-600 to-red-700 text-white text-xs px-3 py-1 flex items-center gap-1.5 z-10 animate-pulse shadow-lg border border-red-500/50">
+                        <Radio className="w-3.5 h-3.5" />
                         LIVE
                       </Badge>
 
@@ -291,52 +309,53 @@ const HomePage = () => {
                         </div>
 
                         {/* Teams row */}
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           {/* Batting Team */}
-                          <div className="flex items-center justify-between gap-2 bg-gradient-to-r from-blue-600 to-blue-700 p-3 rounded-lg">
-                            <div className="flex items-center gap-2 min-w-0 flex-1">
-                              <Avatar className="h-8 w-8 bg-white/20 border border-white/30 flex-shrink-0">
-                                <AvatarFallback className="bg-transparent text-white font-bold text-xs">
+                          <div className="flex items-center justify-between gap-2 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 p-4 rounded-xl shadow-lg border border-blue-500/30 relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <div className="flex items-center gap-3 min-w-0 flex-1 relative z-10">
+                              <Avatar className="h-10 w-10 bg-white/20 border-2 border-white/40 flex-shrink-0 shadow-md">
+                                <AvatarFallback className="bg-transparent text-white font-bold text-sm">
                                   {(battingTeam?.shortName || battingTeam?.name || 'BAT').substring(0, 3).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
                               <div className="min-w-0 flex-1">
-                                <div className="font-semibold text-sm text-white truncate">
+                                <div className="font-bold text-base text-white truncate drop-shadow-sm">
                                   {battingTeam?.shortName || battingTeam?.name || 'Team'}
                                 </div>
-                                <div className="text-[10px] text-blue-100">Batting</div>
+                                <div className="text-[11px] text-blue-100 font-medium">Batting</div>
                               </div>
                             </div>
-                            <div className="text-right flex-shrink-0">
-                              <div className="text-2xl font-bold text-white leading-none">
+                            <div className="text-right flex-shrink-0 relative z-10">
+                              <div className="text-3xl font-extrabold text-white leading-none drop-shadow-lg">
                                 {`${battingScore.totalRuns || 0}/${battingScore.totalWickets || 0}`}
                               </div>
-                              <div className="text-[10px] text-blue-100 mt-0.5">
+                              <div className="text-[11px] text-blue-100 mt-1 font-medium">
                                 ({battingScore.totalOvers || '0.0'}/{totalOvers})
                               </div>
                             </div>
                           </div>
 
                           {/* Bowling Team */}
-                          <div className="flex items-center justify-between gap-2 bg-gray-50 border border-gray-200 p-3 rounded-lg">
-                            <div className="flex items-center gap-2 min-w-0 flex-1">
-                              <Avatar className="h-8 w-8 bg-gray-400 flex-shrink-0">
-                                <AvatarFallback className="text-white font-bold text-xs">
+                          <div className="flex items-center justify-between gap-2 bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200 p-4 rounded-xl shadow-md group-hover:border-gray-300 transition-colors">
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              <Avatar className="h-10 w-10 bg-gradient-to-br from-gray-500 to-gray-600 flex-shrink-0 shadow-md">
+                                <AvatarFallback className="text-white font-bold text-sm">
                                   {(bowlingTeam?.shortName || bowlingTeam?.name || 'BWL').substring(0, 3).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
                               <div className="min-w-0 flex-1">
-                                <div className="font-semibold text-sm text-gray-900 truncate">
+                                <div className="font-bold text-base text-gray-900 truncate">
                                   {bowlingTeam?.shortName || bowlingTeam?.name || 'Team'}
                                 </div>
-                                <div className="text-[10px] text-gray-500">Bowling</div>
+                                <div className="text-[11px] text-gray-600 font-medium">Bowling</div>
                               </div>
                             </div>
                             <div className="text-right flex-shrink-0">
-                              <div className="text-sm font-bold text-gray-700">
+                              <div className="text-lg font-bold text-gray-800">
                                 {bowlingScore.totalRuns > 0 ? 
                                   `${bowlingScore.totalRuns || 0}/${bowlingScore.totalWickets || 0}` : 
-                                  'Yet to bat'
+                                  <span className="text-gray-500 italic">Yet to bat</span>
                                 }
                               </div>
                             </div>
@@ -390,54 +409,103 @@ const HomePage = () => {
         )}
 
         {/* Upcoming Matches */}
-        <div className="mb-12 px-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Clock className="w-6 h-6 text-blue-600" />
+        <div className="mb-16">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+              <Clock className="w-7 h-7 text-white" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900">Upcoming Matches</h2>
+            <h2 className="text-4xl font-extrabold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+              Upcoming Matches
+            </h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {upcomingMatches && upcomingMatches.slice(0, 6).map((match) => (
-              <Link to={`/match/${match.id}`} key={match.id} className="block">
-                <Card className="h-full bg-white hover:shadow-md transition-shadow duration-200 border border-gray-200 relative overflow-hidden">
+          
+          {(!upcomingMatches || upcomingMatches.length === 0) ? (
+            <Card className="border-2 border-dashed border-gray-300 bg-white relative overflow-hidden shadow-sm">
+              <CardContent className="flex flex-col items-center justify-center py-20 px-6 text-center relative z-10">
+                {/* Calendar Icon with circular background */}
+                <div className="mb-8">
+                  <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center shadow-inner relative">
+                    {/* Calendar page design */}
+                    <div className="w-20 h-20 bg-blue-50 rounded-lg flex flex-col items-center justify-center shadow-md border-2 border-blue-200 relative overflow-hidden">
+                      {/* Calendar header */}
+                      <div className="w-full h-6 bg-blue-600 rounded-t-lg flex items-center justify-center">
+                        <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                      </div>
+                      {/* Calendar grid */}
+                      <div className="flex-1 w-full p-2 grid grid-cols-4 gap-1">
+                        {[...Array(8)].map((_, i) => (
+                          <div key={i} className={`w-2 h-2 rounded ${i < 2 ? 'bg-blue-600' : 'bg-blue-200'}`}></div>
+                        ))}
+                      </div>
+                      {/* Calendar icon overlay */}
+                      <Calendar className="absolute w-8 h-8 text-blue-600 opacity-60" />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Message */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center gap-3">
+                    <span className="text-3xl">📬</span>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      No matches available right now
+                    </h3>
+                  </div>
+                  <div className="flex items-center justify-center gap-3">
+                    <span className="text-2xl">⏰</span>
+                    <p className="text-lg text-gray-600 font-medium">
+                      Check back later for upcoming competitions
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {upcomingMatches.slice(0, 6).map((match) => (
+              <Link to={`/match/${match.id}`} key={match.id} className="block group">
+                <Card className="h-full bg-white hover:shadow-2xl transition-all duration-300 border border-gray-200 relative overflow-hidden group-hover:border-blue-300 group-hover:-translate-y-1">
+                  {/* Gradient overlay on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-indigo-50/0 group-hover:from-blue-50/40 group-hover:to-indigo-50/20 transition-all duration-300 pointer-events-none"></div>
+                  
                   {/* Match Format Badge - Top Right */}
-                  <Badge className="absolute top-3 right-3 bg-gray-800 text-white text-xs px-2 py-0.5">
+                  <Badge className="absolute top-4 right-4 bg-gradient-to-r from-gray-800 to-gray-900 text-white text-xs px-3 py-1 shadow-lg z-10 border border-gray-700/50">
                     {match.matchFormat || match.matchType}
                   </Badge>
                   
-                  <CardContent className="pt-4 pb-3 px-4">
+                  <CardContent className="pt-5 pb-4 px-5 relative z-10">
                     {/* Match Title */}
-                    <div className="text-xs text-gray-600 mb-3 pr-12">
-                      {match.matchType || 'Match'} • {match.venue}
+                    <div className="text-xs text-gray-600 mb-4 pr-16 flex items-center gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                      <span className="font-medium">{match.venue}</span>
                     </div>
                     
                     {/* Teams - Horizontal Layout */}
-                    <div className="flex items-center justify-between gap-3 mb-3">
+                    <div className="flex items-center justify-between gap-4 mb-4">
                       {/* Team 1 */}
-                      <div className="flex items-center gap-2 flex-1">
-                        <Avatar className="h-8 w-8 bg-blue-600 flex-shrink-0">
-                          <AvatarFallback className="text-white font-semibold text-xs">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <Avatar className="h-10 w-10 bg-gradient-to-br from-blue-600 to-blue-700 flex-shrink-0 shadow-md border-2 border-blue-500/30">
+                          <AvatarFallback className="text-white font-bold text-sm">
                             {(match.team1?.shortName || match.team1?.name || match.Team1?.name || 'T1').substring(0, 3).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="font-semibold text-sm text-gray-900 truncate">
+                        <span className="font-bold text-sm text-gray-900 truncate">
                           {match.team1?.name || match.Team1?.name || 'Team 1'}
                         </span>
                       </div>
                       
                       {/* VS Badge */}
-                      <Badge variant="outline" className="px-2 py-0.5 text-xs font-semibold flex-shrink-0">
+                      <Badge variant="outline" className="px-3 py-1 text-xs font-bold flex-shrink-0 border-2 border-gray-300 bg-gray-50">
                         VS
                       </Badge>
                       
                       {/* Team 2 */}
-                      <div className="flex items-center gap-2 flex-1 justify-end">
-                        <span className="font-semibold text-sm text-gray-900 truncate">
+                      <div className="flex items-center gap-3 flex-1 justify-end min-w-0">
+                        <span className="font-bold text-sm text-gray-900 truncate">
                           {match.team2?.name || match.Team2?.name || 'Team 2'}
                         </span>
-                        <Avatar className="h-8 w-8 bg-gray-600 flex-shrink-0">
-                          <AvatarFallback className="text-white font-semibold text-xs">
+                        <Avatar className="h-10 w-10 bg-gradient-to-br from-gray-600 to-gray-700 flex-shrink-0 shadow-md border-2 border-gray-500/30">
+                          <AvatarFallback className="text-white font-bold text-sm">
                             {(match.team2?.shortName || match.team2?.name || match.Team2?.name || 'T2').substring(0, 3).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
@@ -445,46 +513,57 @@ const HomePage = () => {
                     </div>
                     
                     {/* Date and Time */}
-                    <div className="text-xs text-gray-600 flex items-center gap-3">
-                      <span className="font-medium">
-                        {new Date(match.matchDate).toLocaleDateString('en-US', { 
-                          weekday: 'short',
-                          month: 'short', 
-                          day: 'numeric'
-                        })}
-                      </span>
-                      <span>•</span>
-                      <span className="font-medium">
-                        {new Date(match.matchDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-100">
+                      <div className="text-xs text-gray-700 flex items-center gap-3">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                          <span className="font-semibold">
+                            {new Date(match.matchDate).toLocaleDateString('en-US', { 
+                              weekday: 'short',
+                              month: 'short', 
+                              day: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                        <span className="text-gray-400">•</span>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-blue-600" />
+                          <span className="font-semibold">
+                            {new Date(match.matchDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                   
                   {/* Footer Actions */}
-                  <div className="border-t border-gray-200 px-4 py-2 flex gap-2 text-xs">
-                    <Button size="sm" variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-7 px-3">
+                  <div className="border-t border-gray-200 px-5 py-3 flex gap-2 text-xs bg-gray-50/50 relative z-10">
+                    <Button size="sm" variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 px-4 font-semibold transition-all">
                       SCHEDULE
                     </Button>
-                    <Button size="sm" variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-7 px-3">
+                    <Button size="sm" variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 px-4 font-semibold transition-all">
                       POINTS TABLE
                     </Button>
                   </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
+                 </Card>
+               </Link>
+             ))}
+            </div>
+          )}
         </div>
 
         {/* Completed Matches */}
         {completedMatches && completedMatches.length > 0 && (
-          <div className="px-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-slate-100 rounded-lg">
-                <Trophy className="w-6 h-6 text-slate-600" />
+          <div>
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-3 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg">
+                <Trophy className="w-7 h-7 text-white" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900">Completed Matches</h2>
+              <h2 className="text-4xl font-extrabold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+                Completed Matches
+              </h2>
             </div>
-            <div className="overflow-x-auto pb-4 -mx-6 px-6">
+            <div className="overflow-x-auto pb-4">
               <div className="flex gap-6 min-w-max"
                    style={{ 
                      display: 'flex',
@@ -550,61 +629,68 @@ const HomePage = () => {
                   }
 
                   return (
-                    <Link to={`/match/${match.id}`} className="block h-full">
-                    <Card className="group h-full bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border hover:border-slate-400">
-                      <CardHeader className="pb-4">
+                    <Link to={`/match/${match.id}`} className="block h-full group">
+                    <Card className="h-full bg-white hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-2 border-gray-200 hover:border-blue-300 relative overflow-hidden">
+                      {/* Gradient overlay on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-indigo-50/0 group-hover:from-blue-50/40 group-hover:to-indigo-50/20 transition-all duration-300 pointer-events-none"></div>
+                      
+                      <CardHeader className="pb-4 relative z-10">
                         <div className="flex items-center justify-between mb-3">
-                          <Badge className="bg-blue-600 hover:bg-blue-700">{match.matchFormat || match.matchType}</Badge>
-                          <Badge variant="secondary">Completed</Badge>
+                          <Badge className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md border border-blue-500/30">
+                            {match.matchFormat || match.matchType}
+                          </Badge>
+                          <Badge variant="secondary" className="bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300 shadow-sm">
+                            Completed
+                          </Badge>
                         </div>
-                        <CardTitle className="text-xs uppercase tracking-wide text-gray-500 font-semibold">
+                        <CardTitle className="text-xs uppercase tracking-widest text-gray-500 font-bold">
                           Final Scores
                         </CardTitle>
                       </CardHeader>
                       
-                      <CardContent className="space-y-3">
+                      <CardContent className="space-y-4 relative z-10">
                         {/* Team 1 */}
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100">
                           <div className="flex items-center gap-3">
-                            <Avatar className={`h-8 w-8 ${winnerTeam && winnerTeam.id === team1?.id ? 'bg-blue-600 ring-2 ring-blue-200' : 'bg-blue-600'}`}>
+                            <Avatar className={`h-10 w-10 ${winnerTeam && winnerTeam.id === team1?.id ? 'bg-gradient-to-br from-blue-600 to-blue-700 ring-2 ring-blue-300 shadow-lg' : 'bg-gradient-to-br from-blue-600 to-blue-700'}`}>
                               <AvatarFallback className="text-white font-bold text-sm">
                                 {(team1?.shortName || team1?.name || 'T1').charAt(0)}
                               </AvatarFallback>
                             </Avatar>
-                            <span className={`font-${winnerTeam && winnerTeam.id === team1?.id ? 'bold' : 'medium'} text-sm ${winnerTeam && winnerTeam.id === team1?.id ? 'text-gray-900' : 'text-gray-600'}`}>
+                            <span className={`font-bold text-base ${winnerTeam && winnerTeam.id === team1?.id ? 'text-gray-900' : 'text-gray-700'}`}>
                               {team1?.shortName || team1?.name}
                             </span>
                           </div>
-                          <span className="font-semibold text-sm text-gray-900">
+                          <span className="font-extrabold text-base text-gray-900">
                             {team1Innings
                               ? `${team1Innings.totalRuns || 0}/${team1Innings.totalWickets || 0} (${team1Innings.totalOvers || '0.0'})`
-                              : 'DNB'}
+                              : <span className="text-gray-500 italic">DNB</span>}
                           </span>
                         </div>
 
                         {/* Team 2 */}
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200">
                           <div className="flex items-center gap-3">
-                            <Avatar className={`h-8 w-8 ${winnerTeam && winnerTeam.id === team2?.id ? 'bg-slate-400 ring-2 ring-slate-200' : 'bg-slate-400'}`}>
+                            <Avatar className={`h-10 w-10 ${winnerTeam && winnerTeam.id === team2?.id ? 'bg-gradient-to-br from-gray-600 to-gray-700 ring-2 ring-gray-300 shadow-lg' : 'bg-gradient-to-br from-gray-600 to-gray-700'}`}>
                               <AvatarFallback className="text-white font-bold text-sm">
                                 {(team2?.shortName || team2?.name || 'T2').charAt(0)}
                               </AvatarFallback>
                             </Avatar>
-                            <span className={`font-${winnerTeam && winnerTeam.id === team2?.id ? 'bold' : 'medium'} text-sm ${winnerTeam && winnerTeam.id === team2?.id ? 'text-gray-900' : 'text-gray-600'}`}>
+                            <span className={`font-bold text-base ${winnerTeam && winnerTeam.id === team2?.id ? 'text-gray-900' : 'text-gray-700'}`}>
                               {team2?.shortName || team2?.name}
                             </span>
                           </div>
-                          <span className="font-semibold text-sm text-gray-900">
+                          <span className="font-extrabold text-base text-gray-900">
                             {team2Innings
                               ? `${team2Innings.totalRuns || 0}/${team2Innings.totalWickets || 0} (${team2Innings.totalOvers || '0.0'})`
-                              : 'DNB'}
+                              : <span className="text-gray-500 italic">DNB</span>}
                           </span>
                         </div>
 
                         {resultText && (
-                          <div className="mt-4 pt-4 border-t border-slate-200">
-                            <p className="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-1">Result</p>
-                            <p className="text-sm font-bold text-blue-600">{resultText}</p>
+                          <div className="mt-4 pt-4 border-t-2 border-gray-200 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg p-4 border border-amber-100">
+                            <p className="text-xs uppercase tracking-widest text-gray-600 font-bold mb-2">Result</p>
+                            <p className="text-base font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{resultText}</p>
                           </div>
                         )}
                       </CardContent>

@@ -30,16 +30,28 @@ const Navbar = () => {
           {/* Logo Section */}
           <Link 
             to="/" 
-            className="flex items-center gap-4 text-gray-900 hover:text-blue-800 transition-colors duration-200"
+            className="flex items-center gap-3 text-gray-900 hover:text-blue-800 transition-colors duration-200 group"
           >
-            <div className="p-2.5 bg-blue-900 rounded-lg shadow-md">
-              <Trophy className="w-7 h-7 text-white" strokeWidth={2} />
+            <div className="p-2 bg-blue-600 rounded-lg shadow-md group-hover:shadow-lg transition-shadow duration-200">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-8 h-8">
+                {/* Trophy/Cup Silhouette */}
+                {/* Top circle/hemisphere */}
+                <circle cx="50" cy="20" r="8" fill="#ffffff"/>
+                {/* Horizontal band below top */}
+                <rect x="42" y="25" width="16" height="4" fill="#ffffff" rx="1"/>
+                {/* Main cup body - outward curving sides */}
+                <path d="M 42 29 Q 50 45 58 29 L 58 65 Q 50 70 42 65 Z" fill="#ffffff"/>
+                {/* Vertical pillar/stem inside */}
+                <rect x="48" y="29" width="4" height="36" fill="#2563eb" rx="1"/>
+                {/* Base - semi-circular/dome */}
+                <ellipse cx="50" cy="68" rx="12" ry="6" fill="#ffffff"/>
+              </svg>
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-2xl leading-tight tracking-tight text-gray-900">
+              <span className="font-extrabold text-2xl leading-tight tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 CricScore
               </span>
-              <span className="text-xs text-gray-600 leading-tight font-medium uppercase tracking-wider">
+              <span className="text-xs text-gray-600 leading-tight font-semibold uppercase tracking-wider">
                 Live Cricket Updates
               </span>
             </div>
