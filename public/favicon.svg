@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background circle - blue -->
+  <circle cx="50" cy="50" r="48" fill="#2563eb" stroke="#1e40af" stroke-width="2"/>
+  
+  <!-- Trophy/Cup Silhouette -->
+  <!-- Top circle/hemisphere -->
+  <circle cx="50" cy="20" r="8" fill="#ffffff"/>
+  
+  <!-- Horizontal band below top -->
+  <rect x="42" y="25" width="16" height="4" fill="#ffffff" rx="1"/>
+  
+  <!-- Main cup body - outward curving sides -->
+  <path d="M 42 29 Q 50 45 58 29 L 58 65 Q 50 70 42 65 Z" fill="#ffffff"/>
+  
+  <!-- Vertical pillar/stem inside -->
+  <rect x="48" y="29" width="4" height="36" fill="#2563eb" rx="1"/>
+  
+  <!-- Base - semi-circular/dome -->
+  <ellipse cx="50" cy="68" rx="12" ry="6" fill="#ffffff"/>
+</svg>
