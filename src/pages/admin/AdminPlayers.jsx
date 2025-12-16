@@ -487,7 +487,7 @@ const AdminPlayers = () => {
               />
             </div>
 
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">Player Photo</label>
               <Button
                 variant="outline"
@@ -535,7 +535,7 @@ const AdminPlayers = () => {
                   />
                 </div>
               )}
-            </div>
+            </div> */}
           </div>
           <DialogFooter className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
             <Button 
