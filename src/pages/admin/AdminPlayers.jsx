@@ -377,16 +377,16 @@ const AdminPlayers = () => {
 
       {/* Create/Edit Player Dialog */}
       <Dialog open={openDialog} onOpenChange={handleCloseDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto mt-12">
+          <DialogHeader className="mb-6">
             <DialogTitle className="text-2xl font-bold">
               {editMode ? 'Edit Player' : 'Add New Player'}
             </DialogTitle>
-            <DialogDescription className="text-base">
+            <DialogDescription className="text-base mt-2">
               Capture the player profile exactly as it should appear in match scorecards.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">Player Name *</label>
               <Input
@@ -491,7 +491,7 @@ const AdminPlayers = () => {
               <label className="text-sm font-semibold text-gray-700">Player Photo</label>
               <Button
                 variant="outline"
-                className="h-11"
+                className="h-11 cursor-pointer"
                 asChild={false}
               >
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -537,18 +537,23 @@ const AdminPlayers = () => {
               )}
             </div>
           </div>
+          <DialogFooter className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+            <Button 
+              variant="outline" 
+              onClick={handleCloseDialog}
+              className="h-11 px-6 font-semibold border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleCreatePlayer}
+              disabled={loading || !newPlayer.name || !newPlayer.teamId}
+              className="h-11 px-8 font-semibold bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg cursor-pointer"
+            >
+              {loading ? 'Saving...' : editMode ? 'Update Player' : 'Create Player'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
-        <DialogFooter className="flex justify-end gap-2 mt-4">
-          <Button variant="outline" onClick={handleCloseDialog}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleCreatePlayer}
-            disabled={loading || !newPlayer.name || !newPlayer.teamId}
-          >
-            {loading ? 'Saving...' : editMode ? 'Update Player' : 'Create Player'}
-          </Button>
-        </DialogFooter>
       </Dialog>
     </AdminLayout>
   );
