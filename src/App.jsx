@@ -6,7 +6,7 @@ import LiveScoreboard from './pages/LiveScoreboardNew';
 import MatchDetailsStatic from './pages/MatchDetailsStatic';
 import LoginPageStatic from './pages/LoginPageStatic';
 import RegisterPage from './pages/RegisterPage';
-import AdminDashboardStatic from './pages/admin/AdminDashboardStatic';
+import AdminDashboardStatic from './pages/admin/AdminDashboard';
 import AdminMatchesStatic from './pages/admin/AdminMatchesStatic';
 import AdminScoreEntryStatic from './pages/admin/AdminScoreEntryStatic';
 import AdminPlayers from './pages/admin/AdminPlayers';
