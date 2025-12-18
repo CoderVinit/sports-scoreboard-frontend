@@ -1,8 +1,5 @@
 import { Link } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
+import { Box, Card, CardContent, Typography, Chip, Avatar, LinearProgress } from "@mui/material";
 import { MapPin, Radio, TrendingUp } from "lucide-react";
 
 const LiveMatchCard = ({ match }) => {
@@ -78,126 +75,263 @@ const LiveMatchCard = ({ match }) => {
   }
 
   return (
-    <Link to={`/match/${match.id}`} className="block group">
-      <Card className="h-full bg-white hover:shadow-2xl transition-all duration-300 border border-gray-200 relative overflow-hidden group-hover:border-blue-300 group-hover:-translate-y-1">
-        {/* Gradient overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-indigo-50/0 group-hover:from-blue-50/50 group-hover:to-indigo-50/30 transition-all duration-300 pointer-events-none"></div>
-
+    <Link to={`/match/${match.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+      <Card
+        sx={{
+          height: '100%',
+          bgcolor: 'background.paper',
+          transition: 'all 0.3s ease',
+          border: '1px solid',
+          borderColor: 'divider',
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: 3,
+          '&:hover': {
+            boxShadow: (theme) => 
+              theme.palette.mode === 'dark' 
+                ? '0 20px 40px rgba(0,0,0,0.4)' 
+                : '0 20px 40px rgba(0,0,0,0.15)',
+            borderColor: 'primary.main',
+            transform: 'translateY(-4px)',
+          },
+        }}
+      >
         {/* Live Badge */}
-        <Badge className="absolute top-4 right-4 bg-gradient-to-r from-red-600 to-red-700 text-white text-xs px-3 py-1 flex items-center gap-1.5 z-10 animate-pulse shadow-lg border border-red-500/50">
-          <Radio className="w-3.5 h-3.5" />
-          LIVE
-        </Badge>
+        <Chip
+          icon={<Radio style={{ width: 14, height: 14, color: 'white' }} />}
+          label="LIVE"
+          size="small"
+          sx={{
+            position: 'absolute',
+            top: 16,
+            right: 16,
+            zIndex: 10,
+            background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+            color: 'white',
+            fontWeight: 700,
+            fontSize: '0.7rem',
+            animation: 'pulse 2s ease-in-out infinite',
+            boxShadow: '0 4px 15px rgba(220, 38, 38, 0.4)',
+          }}
+        />
 
-        <CardContent className="pt-4 pb-3 px-4 space-y-3">
+        <CardContent sx={{ pt: 2, pb: 1.5, px: 2 }}>
           {/* Match meta */}
-          <div className="text-xs text-gray-600 mb-2 pr-16 flex items-center gap-2 flex-wrap">
-            <Badge variant="outline" className="text-[10px] font-medium px-2 py-0.5">
-              {match.matchFormat || match.matchType}
-            </Badge>
-            <span className="inline-flex items-center gap-1 truncate max-w-[45%]">
-              <MapPin className="w-3 h-3 text-gray-500" />
-              <span className="truncate">{match.venue}</span>
-            </span>
-          </div>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, pr: 8, flexWrap: 'wrap' }}>
+            <Chip
+              label={match.matchFormat || match.matchType}
+              size="small"
+              variant="outlined"
+              sx={{ fontSize: '0.65rem', fontWeight: 500, height: 22 }}
+            />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary', overflow: 'hidden' }}>
+              <MapPin style={{ width: 12, height: 12 }} />
+              <Typography variant="caption" sx={{ 
+                overflow: 'hidden', 
+                textOverflow: 'ellipsis', 
+                whiteSpace: 'nowrap',
+                maxWidth: 150 
+              }}>
+                {match.venue}
+              </Typography>
+            </Box>
+          </Box>
 
           {/* Teams row */}
-          <div className="space-y-3">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {/* Batting Team */}
-            <div className="flex items-center justify-between gap-2 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 p-4 rounded-xl shadow-lg border border-blue-500/30 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="flex items-center gap-3 min-w-0 flex-1 relative z-10">
-                <Avatar className="h-10 w-10 bg-white/20 border-2 border-white/40 flex-shrink-0 shadow-md">
-                  <AvatarFallback className="bg-transparent text-white font-bold text-sm">
-                    {(battingTeam?.shortName || battingTeam?.name || "BAT")
-                      .substring(0, 3)
-                      .toUpperCase()}
-                  </AvatarFallback>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 1,
+                background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #4338ca 100%)',
+                p: 2,
+                borderRadius: 3,
+                boxShadow: '0 10px 25px -5px rgba(99, 102, 241, 0.3)',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0, flex: 1, position: 'relative', zIndex: 1 }}>
+                <Avatar
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    bgcolor: 'rgba(255,255,255,0.2)',
+                    border: '2px solid rgba(255,255,255,0.4)',
+                    flexShrink: 0,
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    color: 'white',
+                  }}
+                >
+                  {(battingTeam?.shortName || battingTeam?.name || "BAT")
+                    .substring(0, 3)
+                    .toUpperCase()}
                 </Avatar>
-                <div className="min-w-0 flex-1">
-                  <div className="font-bold text-base text-white truncate drop-shadow-sm">
+                <Box sx={{ minWidth: 0, flex: 1 }}>
+                  <Typography sx={{ fontWeight: 700, color: 'white', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {battingTeam?.shortName || battingTeam?.name || "Team"}
-                  </div>
-                  <div className="text-[11px] text-blue-100 font-medium">Batting</div>
-                </div>
-              </div>
-              <div className="text-right flex-shrink-0 relative z-10">
-                <div className="text-3xl font-extrabold text-white leading-none drop-shadow-lg">
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.65rem', color: 'rgba(199, 210, 254, 1)', fontWeight: 500 }}>
+                    Batting
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ textAlign: 'right', flexShrink: 0, position: 'relative', zIndex: 1 }}>
+                <Typography sx={{ fontSize: '1.75rem', fontWeight: 800, color: 'white', lineHeight: 1, textShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>
                   {`${battingScore.totalRuns || 0}/${battingScore.totalWickets || 0}`}
-                </div>
-                <div className="text-[11px] text-blue-100 mt-1 font-medium">
+                </Typography>
+                <Typography sx={{ fontSize: '0.65rem', color: 'rgba(199, 210, 254, 1)', mt: 0.5, fontWeight: 500 }}>
                   ({battingScore.totalOvers || "0.0"}/{totalOvers})
-                </div>
-              </div>
-            </div>
+                </Typography>
+              </Box>
+            </Box>
 
             {/* Bowling Team */}
-            <div className="flex items-center justify-between gap-2 bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200 p-4 rounded-xl shadow-md group-hover:border-gray-300 transition-colors">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                <Avatar className="h-10 w-10 bg-gradient-to-br from-gray-500 to-gray-600 flex-shrink-0 shadow-md">
-                  <AvatarFallback className="text-white font-bold text-sm">
-                    {(bowlingTeam?.shortName || bowlingTeam?.name || "BWL")
-                      .substring(0, 3)
-                      .toUpperCase()}
-                  </AvatarFallback>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 1,
+                bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(241, 245, 249, 1)',
+                border: '2px solid',
+                borderColor: 'divider',
+                p: 2,
+                borderRadius: 3,
+                boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+                transition: 'border-color 0.3s ease',
+                '&:hover': {
+                  borderColor: 'divider',
+                },
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0, flex: 1 }}>
+                <Avatar
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    background: 'linear-gradient(135deg, #64748b 0%, #475569 100%)',
+                    flexShrink: 0,
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    color: 'white',
+                  }}
+                >
+                  {(bowlingTeam?.shortName || bowlingTeam?.name || "BWL")
+                    .substring(0, 3)
+                    .toUpperCase()}
                 </Avatar>
-                <div className="min-w-0 flex-1">
-                  <div className="font-bold text-base text-gray-900 truncate">
+                <Box sx={{ minWidth: 0, flex: 1 }}>
+                  <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {bowlingTeam?.shortName || bowlingTeam?.name || "Team"}
-                  </div>
-                  <div className="text-[11px] text-gray-600 font-medium">Bowling</div>
-                </div>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <div className="text-lg font-bold text-gray-800">
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary', fontWeight: 500 }}>
+                    Bowling
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
+                <Typography sx={{ fontSize: '1.1rem', fontWeight: 700, color: 'text.primary' }}>
                   {bowlingScore.totalRuns > 0 ? (
                     `${bowlingScore.totalRuns || 0}/${bowlingScore.totalWickets || 0}`
                   ) : (
-                    <span className="text-gray-500 italic">Yet to bat</span>
+                    <Typography component="span" sx={{ color: 'text.secondary', fontStyle: 'italic', fontSize: '0.9rem' }}>
+                      Yet to bat
+                    </Typography>
                   )}
-                </div>
-              </div>
-            </div>
-          </div>
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
 
           {/* Match Progress */}
           {!isCompletedByInnings && (
-            <div>
-              <div className="flex justify-between items-center mb-1 text-[11px]">
-                <span className="text-gray-600">Progress</span>
-                <span className="text-gray-500">
+            <Box sx={{ mt: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                <Typography variant="caption" color="text.secondary">Progress</Typography>
+                <Typography variant="caption" color="text.secondary">
                   {currentInnings?.totalOvers || "0.0"}/{totalOvers} ov
-                </span>
-              </div>
-              <Progress value={progress} className="h-1.5" />
-            </div>
+                </Typography>
+              </Box>
+              <LinearProgress 
+                variant="determinate" 
+                value={progress} 
+                sx={{ 
+                  height: 6, 
+                  borderRadius: 3,
+                  bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+                  '& .MuiLinearProgress-bar': {
+                    background: 'linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%)',
+                    borderRadius: 3,
+                  }
+                }} 
+              />
+            </Box>
           )}
 
           {/* Stats footer */}
-          <div className="flex items-center justify-between text-[11px] pt-1 border-t border-gray-100">
-            <div className="flex items-center gap-1 text-gray-600">
-              <TrendingUp className="w-3 h-3 text-blue-600" />
-              <span>
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', 
+              mt: 2, 
+              pt: 1.5, 
+              borderTop: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+              <TrendingUp style={{ width: 12, height: 12, color: '#6366f1' }} />
+              <Typography variant="caption">
                 CRR:{" "}
-                <span className="text-blue-600 font-semibold">
+                <Typography component="span" variant="caption" sx={{ color: 'primary.main', fontWeight: 600 }}>
                   {(() => {
                     const overs = parseFloat(currentInnings?.totalOvers || 0);
                     const runs = currentInnings?.totalRuns || 0;
                     return overs > 0 ? (runs / overs).toFixed(2) : "0.00";
                   })()}
-                </span>
-              </span>
-            </div>
+                </Typography>
+              </Typography>
+            </Box>
             {isCompletedByInnings && resultText ? (
-              <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-2 py-1 rounded-full truncate max-w-[50%]">
-                {resultText}
-              </span>
+              <Chip
+                label={resultText}
+                size="small"
+                sx={{
+                  fontSize: '0.6rem',
+                  fontWeight: 600,
+                  bgcolor: 'rgba(34, 197, 94, 0.1)',
+                  color: '#16a34a',
+                  height: 22,
+                  maxWidth: '50%',
+                  '& .MuiChip-label': {
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }
+                }}
+              />
             ) : (
-              <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-1 rounded-full">
-                In progress
-              </span>
+              <Chip
+                label="In progress"
+                size="small"
+                sx={{
+                  fontSize: '0.6rem',
+                  fontWeight: 600,
+                  bgcolor: 'rgba(245, 158, 11, 0.1)',
+                  color: '#d97706',
+                  height: 22,
+                }}
+              />
             )}
-          </div>
+          </Box>
         </CardContent>
       </Card>
     </Link>

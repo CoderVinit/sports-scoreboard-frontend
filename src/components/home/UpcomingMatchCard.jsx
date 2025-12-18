@@ -1,112 +1,197 @@
 import { Link } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Box, Card, CardContent, Typography, Chip, Avatar, Button } from "@mui/material";
 import { Calendar, Clock, MapPin } from "lucide-react";
 
 const UpcomingMatchCard = ({ match }) => {
   return (
-    <Link to={`/match/${match.id}`} className="block group">
-      <Card className="h-full bg-white hover:shadow-2xl transition-all duration-300 border border-gray-200 relative overflow-hidden group-hover:border-blue-300 group-hover:-translate-y-1">
-        {/* Gradient overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-indigo-50/0 group-hover:from-blue-50/40 group-hover:to-indigo-50/20 transition-all duration-300 pointer-events-none"></div>
-
+    <Link to={`/match/${match.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+      <Card
+        sx={{
+          height: '100%',
+          bgcolor: 'background.paper',
+          transition: 'all 0.3s ease',
+          border: '1px solid',
+          borderColor: 'divider',
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: 3,
+          '&:hover': {
+            boxShadow: (theme) => 
+              theme.palette.mode === 'dark' 
+                ? '0 20px 40px rgba(0,0,0,0.4)' 
+                : '0 20px 40px rgba(0,0,0,0.15)',
+            borderColor: 'primary.main',
+            transform: 'translateY(-4px)',
+          },
+        }}
+      >
         {/* Match Format Badge - Top Right */}
-        <Badge className="absolute top-4 right-4 bg-gradient-to-r from-gray-800 to-gray-900 text-white text-xs px-3 py-1 shadow-lg z-10 border border-gray-700/50">
-          {match.matchFormat || match.matchType}
-        </Badge>
+        <Chip
+          label={match.matchFormat || match.matchType}
+          size="small"
+          sx={{
+            position: 'absolute',
+            top: 16,
+            right: 16,
+            zIndex: 10,
+            background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+            color: 'white',
+            fontWeight: 700,
+            fontSize: '0.65rem',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+          }}
+        />
 
-        <CardContent className="pt-5 pb-4 px-5 relative z-10">
+        <CardContent sx={{ pt: 2.5, pb: 2, px: 2.5, position: 'relative', zIndex: 1 }}>
           {/* Match Title */}
-          <div className="text-xs text-gray-600 mb-4 pr-16 flex items-center gap-2">
-            <MapPin className="w-3.5 h-3.5 text-gray-400" />
-            <span className="font-medium">{match.venue}</span>
-          </div>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, pr: 8 }}>
+            <MapPin style={{ width: 14, height: 14, color: '#9ca3af' }} />
+            <Typography variant="caption" fontWeight={500} color="text.secondary">
+              {match.venue}
+            </Typography>
+          </Box>
 
           {/* Teams - Horizontal Layout */}
-          <div className="flex items-center justify-between gap-4 mb-4">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, mb: 2 }}>
             {/* Team 1 */}
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <Avatar className="h-10 w-10 bg-gradient-to-br from-blue-600 to-blue-700 flex-shrink-0 shadow-md border-2 border-blue-500/30">
-                <AvatarFallback className="text-white font-bold text-sm">
-                  {(match.team1?.shortName || match.team1?.name || match.Team1?.name || "T1")
-                    .substring(0, 3)
-                    .toUpperCase()}
-                </AvatarFallback>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0 }}>
+              <Avatar
+                sx={{
+                  width: 40,
+                  height: 40,
+                  background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                  flexShrink: 0,
+                  boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)',
+                  fontWeight: 700,
+                  fontSize: '0.8rem',
+                }}
+              >
+                {(match.team1?.shortName || match.team1?.name || match.Team1?.name || "T1")
+                  .substring(0, 3)
+                  .toUpperCase()}
               </Avatar>
-              <span className="font-bold text-sm text-gray-900 truncate">
+              <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: 'text.primary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {match.team1?.name || match.Team1?.name || "Team 1"}
-              </span>
-            </div>
+              </Typography>
+            </Box>
 
             {/* VS Badge */}
-            <Badge
-              variant="outline"
-              className="px-3 py-1 text-xs font-bold flex-shrink-0 border-2 border-gray-300 bg-gray-50"
-            >
-              VS
-            </Badge>
+            <Chip
+              label="VS"
+              variant="outlined"
+              size="small"
+              sx={{
+                fontWeight: 700,
+                fontSize: '0.7rem',
+                flexShrink: 0,
+                borderWidth: 2,
+                borderColor: 'divider',
+                bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+              }}
+            />
 
             {/* Team 2 */}
-            <div className="flex items-center gap-3 flex-1 justify-end min-w-0">
-              <span className="font-bold text-sm text-gray-900 truncate">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, justifyContent: 'flex-end', minWidth: 0 }}>
+              <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: 'text.primary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {match.team2?.name || match.Team2?.name || "Team 2"}
-              </span>
-              <Avatar className="h-10 w-10 bg-gradient-to-br from-gray-600 to-gray-700 flex-shrink-0 shadow-md border-2 border-gray-500/30">
-                <AvatarFallback className="text-white font-bold text-sm">
-                  {(match.team2?.shortName || match.team2?.name || match.Team2?.name || "T2")
-                    .substring(0, 3)
-                    .toUpperCase()}
-                </AvatarFallback>
+              </Typography>
+              <Avatar
+                sx={{
+                  width: 40,
+                  height: 40,
+                  background: 'linear-gradient(135deg, #64748b 0%, #475569 100%)',
+                  flexShrink: 0,
+                  boxShadow: '0 4px 15px rgba(71, 85, 105, 0.3)',
+                  fontWeight: 700,
+                  fontSize: '0.8rem',
+                }}
+              >
+                {(match.team2?.shortName || match.team2?.name || match.Team2?.name || "T2")
+                  .substring(0, 3)
+                  .toUpperCase()}
               </Avatar>
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           {/* Date and Time */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-100">
-            <div className="text-xs text-gray-700 flex items-center gap-3">
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                <span className="font-semibold">
+          <Box
+            sx={{
+              background: (theme) => 
+                theme.palette.mode === 'dark' 
+                  ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)'
+                  : 'linear-gradient(135deg, rgba(239, 246, 255, 1) 0%, rgba(238, 242, 255, 1) 100%)',
+              borderRadius: 2,
+              p: 1.5,
+              border: '1px solid',
+              borderColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.15)',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'text.secondary' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <Calendar style={{ width: 14, height: 14, color: '#6366f1' }} />
+                <Typography variant="caption" fontWeight={600}>
                   {new Date(match.matchDate).toLocaleDateString("en-US", {
                     weekday: "short",
                     month: "short",
                     day: "numeric",
                   })}
-                </span>
-              </div>
-              <span className="text-gray-400">•</span>
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-blue-600" />
-                <span className="font-semibold">
+                </Typography>
+              </Box>
+              <Typography variant="caption" color="text.disabled">•</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <Clock style={{ width: 14, height: 14, color: '#6366f1' }} />
+                <Typography variant="caption" fontWeight={600}>
                   {new Date(match.matchDate).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
-                </span>
-              </div>
-            </div>
-          </div>
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
         </CardContent>
 
         {/* Footer Actions */}
-        <div className="border-t border-gray-200 px-5 py-3 flex gap-2 text-xs bg-gray-50/50 relative z-10">
+        <Box
+          sx={{
+            borderTop: '1px solid',
+            borderColor: 'divider',
+            px: 2.5,
+            py: 1.5,
+            display: 'flex',
+            gap: 1,
+            bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+            position: 'relative',
+            zIndex: 1,
+          }}
+        >
           <Button
-            size="sm"
-            variant="ghost"
-            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 px-4 font-semibold transition-all"
+            size="small"
+            sx={{
+              color: 'primary.main',
+              fontWeight: 600,
+              fontSize: '0.7rem',
+              '&:hover': {
+                bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.15)' : 'rgba(99, 102, 241, 0.1)',
+              },
+            }}
           >
             SCHEDULE
           </Button>
           <Button
-            size="sm"
-            variant="ghost"
-            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 px-4 font-semibold transition-all"
+            size="small"
+            sx={{
+              color: 'primary.main',
+              fontWeight: 600,
+              fontSize: '0.7rem',
+              '&:hover': {
+                bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.15)' : 'rgba(99, 102, 241, 0.1)',
+              },
+            }}
           >
             POINTS TABLE
           </Button>
-        </div>
+        </Box>
       </Card>
     </Link>
   );

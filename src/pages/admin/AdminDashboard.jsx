@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { Box, Grid } from '@mui/material';
 import AdminLayout from '../../components/admin/AdminLayout';
 import CricketLoader from '../../components/CricketLoader';
 import { matchService, teamService, playerService } from '../../api/services';
@@ -62,10 +63,14 @@ const AdminDashboardStatic = () => {
       subtitle={`Welcome back, ${user?.username || 'Admin'}. Here's your overview.`}
     >
       <DashboardStats stats={stats} />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <DashboardActions navigate={navigate} liveMatches={liveMatches} />
-        <RecentActivity navigate={navigate} liveMatches={liveMatches} />
-      </div>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <DashboardActions navigate={navigate} liveMatches={liveMatches} />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <RecentActivity navigate={navigate} liveMatches={liveMatches} />
+        </Grid>
+      </Grid>
     </AdminLayout>
   );
 };

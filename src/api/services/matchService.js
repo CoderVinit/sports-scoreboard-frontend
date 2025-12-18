@@ -73,6 +73,12 @@ const matchService = {
     return response.data;
   },
 
+  // Start match (admin) - creates first innings and sets to live
+  startMatch: async (matchId) => {
+    const response = await apiClient.post(`/matches/${matchId}/start`);
+    return response.data;
+  },
+
   // Delete match (admin)
   deleteMatch: async (matchId) => {
     const response = await apiClient.delete(`/matches/${matchId}`);

@@ -1,7 +1,5 @@
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Box, Card, CardContent, Typography, Chip, Avatar } from "@mui/material";
 
 const CompletedMatchCard = ({ match }) => {
   const inningsList = match.innings || [];
@@ -53,100 +51,192 @@ const CompletedMatchCard = ({ match }) => {
   }
 
   return (
-    <Link to={`/match/${match.id}`} className="block h-full group">
-      <Card className="h-full bg-white hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-2 border-gray-200 hover:border-blue-300 relative overflow-hidden">
-        {/* Gradient overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-indigo-50/0 group-hover:from-blue-50/40 group-hover:to-indigo-50/20 transition-all duration-300 pointer-events-none"></div>
-
-        <CardHeader className="pb-4 relative z-10">
-          <div className="flex items-center justify-between mb-3">
-            <Badge className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md border border-blue-500/30">
-              {match.matchFormat || match.matchType}
-            </Badge>
-            <Badge
-              variant="secondary"
-              className="bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300 shadow-sm"
-            >
-              Completed
-            </Badge>
-          </div>
-          <CardTitle className="text-xs uppercase tracking-widest text-gray-500 font-bold">
+    <Link to={`/match/${match.id}`} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
+      <Card
+        sx={{
+          height: '100%',
+          bgcolor: 'background.paper',
+          transition: 'all 0.3s ease',
+          border: '2px solid',
+          borderColor: 'divider',
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: 3,
+          '&:hover': {
+            boxShadow: (theme) => 
+              theme.palette.mode === 'dark' 
+                ? '0 20px 40px rgba(0,0,0,0.4)' 
+                : '0 20px 40px rgba(0,0,0,0.15)',
+            borderColor: 'primary.main',
+            transform: 'translateY(-8px)',
+          },
+        }}
+      >
+        {/* Header */}
+        <Box sx={{ p: 2, pb: 1.5, position: 'relative', zIndex: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+            <Chip
+              label={match.matchFormat || match.matchType}
+              size="small"
+              sx={{
+                background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                color: 'white',
+                fontWeight: 700,
+                fontSize: '0.65rem',
+                boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)',
+              }}
+            />
+            <Chip
+              label="Completed"
+              size="small"
+              sx={{
+                bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+                color: 'text.secondary',
+                fontWeight: 600,
+                fontSize: '0.65rem',
+              }}
+            />
+          </Box>
+          <Typography variant="caption" sx={{ textTransform: 'uppercase', letterSpacing: '0.1em', color: 'text.secondary', fontWeight: 700 }}>
             Final Scores
-          </CardTitle>
-        </CardHeader>
+          </Typography>
+        </Box>
 
-        <CardContent className="space-y-4 relative z-10">
+        <CardContent sx={{ pt: 0, pb: 2, px: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {/* Team 1 */}
-          <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100">
-            <div className="flex items-center gap-3">
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              p: 1.5,
+              borderRadius: 2,
+              background: (theme) => 
+                theme.palette.mode === 'dark' 
+                  ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)'
+                  : 'linear-gradient(135deg, rgba(239, 246, 255, 1) 0%, rgba(238, 242, 255, 1) 100%)',
+              border: '1px solid',
+              borderColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.15)',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Avatar
-                className={`h-10 w-10 ${
-                  winnerTeam && winnerTeam.id === team1?.id
-                    ? "bg-gradient-to-br from-blue-600 to-blue-700 ring-2 ring-blue-300 shadow-lg"
-                    : "bg-gradient-to-br from-blue-600 to-blue-700"
-                }`}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  ...(winnerTeam && winnerTeam.id === team1?.id && {
+                    ring: 2,
+                    boxShadow: '0 0 0 3px rgba(99, 102, 241, 0.3), 0 4px 15px rgba(99, 102, 241, 0.3)',
+                  }),
+                }}
               >
-                <AvatarFallback className="text-white font-bold text-sm">
-                  {(team1?.shortName || team1?.name || "T1").charAt(0)}
-                </AvatarFallback>
+                {(team1?.shortName || team1?.name || "T1").charAt(0)}
               </Avatar>
-              <span
-                className={`font-bold text-base ${
-                  winnerTeam && winnerTeam.id === team1?.id ? "text-gray-900" : "text-gray-700"
-                }`}
+              <Typography
+                sx={{
+                  fontWeight: winnerTeam && winnerTeam.id === team1?.id ? 800 : 700,
+                  fontSize: '0.95rem',
+                  color: 'text.primary',
+                }}
               >
                 {team1?.shortName || team1?.name}
-              </span>
-            </div>
-            <span className="font-extrabold text-base text-gray-900">
+              </Typography>
+            </Box>
+            <Typography sx={{ fontWeight: 800, fontSize: '0.9rem', color: 'text.primary' }}>
               {team1Innings ? (
                 `${team1Innings.totalRuns || 0}/${team1Innings.totalWickets || 0} (${team1Innings.totalOvers || "0.0"})`
               ) : (
-                <span className="text-gray-500 italic">DNB</span>
+                <Typography component="span" sx={{ color: 'text.secondary', fontStyle: 'italic', fontSize: '0.8rem' }}>DNB</Typography>
               )}
-            </span>
-          </div>
+            </Typography>
+          </Box>
 
           {/* Team 2 */}
-          <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200">
-            <div className="flex items-center gap-3">
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              p: 1.5,
+              borderRadius: 2,
+              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(241, 245, 249, 1)',
+              border: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Avatar
-                className={`h-10 w-10 ${
-                  winnerTeam && winnerTeam.id === team2?.id
-                    ? "bg-gradient-to-br from-gray-600 to-gray-700 ring-2 ring-gray-300 shadow-lg"
-                    : "bg-gradient-to-br from-gray-600 to-gray-700"
-                }`}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  background: 'linear-gradient(135deg, #64748b 0%, #475569 100%)',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  ...(winnerTeam && winnerTeam.id === team2?.id && {
+                    ring: 2,
+                    boxShadow: '0 0 0 3px rgba(100, 116, 139, 0.3), 0 4px 15px rgba(100, 116, 139, 0.3)',
+                  }),
+                }}
               >
-                <AvatarFallback className="text-white font-bold text-sm">
-                  {(team2?.shortName || team2?.name || "T2").charAt(0)}
-                </AvatarFallback>
+                {(team2?.shortName || team2?.name || "T2").charAt(0)}
               </Avatar>
-              <span
-                className={`font-bold text-base ${
-                  winnerTeam && winnerTeam.id === team2?.id ? "text-gray-900" : "text-gray-700"
-                }`}
+              <Typography
+                sx={{
+                  fontWeight: winnerTeam && winnerTeam.id === team2?.id ? 800 : 700,
+                  fontSize: '0.95rem',
+                  color: 'text.primary',
+                }}
               >
                 {team2?.shortName || team2?.name}
-              </span>
-            </div>
-            <span className="font-extrabold text-base text-gray-900">
+              </Typography>
+            </Box>
+            <Typography sx={{ fontWeight: 800, fontSize: '0.9rem', color: 'text.primary' }}>
               {team2Innings ? (
                 `${team2Innings.totalRuns || 0}/${team2Innings.totalWickets || 0} (${team2Innings.totalOvers || "0.0"})`
               ) : (
-                <span className="text-gray-500 italic">DNB</span>
+                <Typography component="span" sx={{ color: 'text.secondary', fontStyle: 'italic', fontSize: '0.8rem' }}>DNB</Typography>
               )}
-            </span>
-          </div>
+            </Typography>
+          </Box>
 
           {resultText && (
-            <div className="mt-4 pt-4 border-t-2 border-gray-200 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg p-4 border border-amber-100">
-              <p className="text-xs uppercase tracking-widest text-gray-600 font-bold mb-2">
+            <Box
+              sx={{
+                mt: 1,
+                pt: 1.5,
+                borderTop: '2px solid',
+                borderColor: 'divider',
+                background: (theme) => 
+                  theme.palette.mode === 'dark' 
+                    ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(234, 179, 8, 0.1) 100%)'
+                    : 'linear-gradient(135deg, rgba(254, 249, 195, 1) 0%, rgba(254, 252, 232, 1) 100%)',
+                borderRadius: 2,
+                p: 2,
+                border: '1px solid',
+                borderTopColor: 'divider',
+                borderLeftColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.15)',
+                borderRightColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.15)',
+                borderBottomColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.15)',
+              }}
+            >
+              <Typography variant="caption" sx={{ textTransform: 'uppercase', letterSpacing: '0.1em', color: 'text.secondary', fontWeight: 700, display: 'block', mb: 0.5 }}>
                 Result
-              </p>
-              <p className="text-base font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              </Typography>
+              <Typography
+                sx={{
+                  fontWeight: 800,
+                  fontSize: '0.9rem',
+                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
                 {resultText}
-              </p>
-            </div>
+              </Typography>
+            </Box>
           )}
         </CardContent>
       </Card>

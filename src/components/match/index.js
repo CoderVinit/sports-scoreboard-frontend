@@ -1,10 +1,17 @@
 export { getTeamColors, hexToRgba } from './teamColors';
 export { default as MatchHeader } from './MatchHeader';
+export { default as MatchHeaderNew } from './MatchHeaderNew';
 export { default as MatchTabs } from './MatchTabs';
 export { default as BattingScorecard } from './BattingScorecard';
+export { default as BattingScorecardNew } from './BattingScorecardNew';
 export { default as BowlingScorecard } from './BowlingScorecard';
+export { default as BowlingScorecardNew } from './BowlingScorecardNew';
 export { default as FallOfWickets } from './FallOfWickets';
+export { default as FallOfWicketsNew } from './FallOfWicketsNew';
 export { default as Partnerships } from './Partnerships';
 export { default as CommentaryTab } from './CommentaryTab';
+export { default as CommentaryNew } from './CommentaryNew';
 export { default as StatisticsTab } from './StatisticsTab';
 export { default as SquadsTab } from './SquadsTab';
+export { default as MatchSidebar } from './MatchSidebar';
+export { default as InningsTabs } from './InningsTabs';

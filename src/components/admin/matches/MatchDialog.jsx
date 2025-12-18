@@ -1,21 +1,10 @@
 import { useEffect, useState } from 'react';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Calendar, MapPin, Trophy } from 'lucide-react';
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  Box, Typography, Grid, TextField, Button,
+  FormControl, InputLabel, Select, MenuItem
+} from '@mui/material';
+import { Calendar, MapPin, Trophy, X } from 'lucide-react';
 import { matchService } from '@/api/services';
 
 const INITIAL_STATE = {
@@ -50,7 +39,6 @@ const MatchDialog = ({
   const [form, setForm] = useState(INITIAL_STATE);
   const [submitting, setSubmitting] = useState(false);
 
-  /* ---------------- PREFILL (EDIT MODE) ---------------- */
   useEffect(() => {
     if (editMode && match) {
       setForm({
@@ -70,7 +58,6 @@ const MatchDialog = ({
     }
   }, [editMode, match]);
 
-  /* ---------------- SUBMIT ---------------- */
   const handleSubmit = async () => {
     try {
       setSubmitting(true);
@@ -88,7 +75,6 @@ const MatchDialog = ({
         tossDecision: form.tossWinnerId ? form.tossDecision : null,
       };
 
-      // Optional: set battingFirstId automatically
       if (payload.tossWinnerId && payload.tossDecision) {
         payload.battingFirstId =
           payload.tossDecision === 'bat'
@@ -113,266 +99,362 @@ const MatchDialog = ({
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className=" max-w-4xl
-    max-h-[calc(100vh-8rem)]
-    overflow-y-auto
-    mt-12">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">
-            {editMode ? 'Edit Match' : 'Create Match'}
-          </DialogTitle>
-        </DialogHeader>
+  const inputStyle = {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: '10px',
+      '& fieldset': { borderColor: '#e2e8f0' },
+      '&:hover fieldset': { borderColor: '#94a3b8' },
+      '&.Mui-focused fieldset': { borderColor: '#3b82f6', borderWidth: '1px' }
+    }
+  };
 
-        {/* ---------------- FORM ---------------- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-6">
+  const selectStyle = {
+    borderRadius: '10px',
+    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' },
+    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#3b82f6', borderWidth: '1px' }
+  };
+
+  return (
+    <Dialog 
+      open={open} 
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: '20px',
+          overflow: 'hidden',
+          maxHeight: '90vh'
+        }
+      }}
+    >
+      {/* Header */}
+      <DialogTitle sx={{ 
+        p: 0,
+        background: 'linear-gradient(135deg, #0c1929 0%, #1e3a5f 100%)',
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          p: 3
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{
+              width: 44,
+              height: 44,
+              borderRadius: '12px',
+              bgcolor: 'rgba(59, 130, 246, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Trophy size={22} style={{ color: '#60a5fa' }} />
+            </Box>
+            <Box>
+              <Typography sx={{ color: 'white', fontWeight: 700, fontSize: '1.25rem' }}>
+                {editMode ? 'Edit Match' : 'Create Match'}
+              </Typography>
+              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>
+                {editMode ? 'Update match details' : 'Schedule a new match'}
+              </Typography>
+            </Box>
+          </Box>
+          <Box
+            onClick={onClose}
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: '10px',
+              bgcolor: 'rgba(255,255,255,0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }
+            }}
+          >
+            <X size={18} style={{ color: 'white' }} />
+          </Box>
+        </Box>
+      </DialogTitle>
+
+      {/* Content */}
+      <DialogContent sx={{ p: 3, overflowY: 'auto' }}>
+        <Grid container spacing={3} sx={{ mt: 0 }}>
+          {/* Team Selection Section */}
+          <Grid item xs={12}>
+            <Typography sx={{ 
+              fontSize: '0.75rem', 
+              fontWeight: 700, 
+              color: '#64748b',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              mb: 2
+            }}>
+              Team Selection
+            </Typography>
+          </Grid>
+
           {/* Team 1 */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold">Team 1</label>
-            <Select
-              value={form.team1Id}
-              onValueChange={(v) =>
-                setForm({ ...form, team1Id: v })
-              }
-            >
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder="Select Team 1" />
-              </SelectTrigger>
-              <SelectContent>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Team 1 *</InputLabel>
+              <Select
+                value={form.team1Id}
+                onChange={(e) => setForm({ ...form, team1Id: e.target.value })}
+                label="Team 1 *"
+                sx={selectStyle}
+              >
                 {teams.map((t) => (
-                  <SelectItem key={t.id} value={String(t.id)}>
+                  <MenuItem key={t.id} value={String(t.id)}>
                     {t.name}
-                  </SelectItem>
+                  </MenuItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </Select>
+            </FormControl>
+          </Grid>
 
           {/* Team 2 */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold">Team 2</label>
-            <Select
-              value={form.team2Id}
-              onValueChange={(v) =>
-                setForm({ ...form, team2Id: v })
-              }
-            >
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder="Select Team 2" />
-              </SelectTrigger>
-              <SelectContent>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Team 2 *</InputLabel>
+              <Select
+                value={form.team2Id}
+                onChange={(e) => setForm({ ...form, team2Id: e.target.value })}
+                label="Team 2 *"
+                sx={selectStyle}
+              >
                 {teams.map((t) => (
-                  <SelectItem
-                    key={t.id}
+                  <MenuItem 
+                    key={t.id} 
                     value={String(t.id)}
                     disabled={String(t.id) === form.team1Id}
                   >
                     {t.name}
-                  </SelectItem>
+                  </MenuItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Match Details Section */}
+          <Grid item xs={12}>
+            <Typography sx={{ 
+              fontSize: '0.75rem', 
+              fontWeight: 700, 
+              color: '#64748b',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              mb: 2,
+              mt: 1
+            }}>
+              Match Details
+            </Typography>
+          </Grid>
 
           {/* Match Format */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold">
-              Match Format
-            </label>
-            <Select
-              value={form.matchFormat}
-              onValueChange={(v) =>
-                setForm({
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Match Format</InputLabel>
+              <Select
+                value={form.matchFormat}
+                onChange={(e) => setForm({
                   ...form,
-                  matchFormat: v,
-                  totalOvers: OVERS_MAP[v] || 20,
-                })
-              }
-            >
-              <SelectTrigger className="h-11">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
+                  matchFormat: e.target.value,
+                  totalOvers: OVERS_MAP[e.target.value] || 20,
+                })}
+                label="Match Format"
+                sx={selectStyle}
+              >
                 {Object.keys(OVERS_MAP).map((f) => (
-                  <SelectItem key={f} value={f}>
-                    {f}
-                  </SelectItem>
+                  <MenuItem key={f} value={f}>{f}</MenuItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </Select>
+            </FormControl>
+          </Grid>
 
-          {/* Overs */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold">
-              Total Overs
-            </label>
-            <Input
+          {/* Total Overs */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Total Overs"
               type="number"
-              className="h-11"
               value={form.totalOvers}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  totalOvers: Number(e.target.value),
-                })
-              }
+              onChange={(e) => setForm({ ...form, totalOvers: Number(e.target.value) })}
+              sx={inputStyle}
             />
-          </div>
+          </Grid>
 
           {/* Venue */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold flex gap-2">
-              <MapPin className="w-4 h-4" /> Venue
-            </label>
-            <Input
-              className="h-11"
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Venue *"
               value={form.venue}
-              onChange={(e) =>
-                setForm({ ...form, venue: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, venue: e.target.value })}
+              InputProps={{
+                startAdornment: <MapPin size={16} style={{ color: '#94a3b8', marginRight: 8 }} />
+              }}
+              sx={inputStyle}
             />
-          </div>
+          </Grid>
 
           {/* City */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold">City</label>
-            <Input
-              className="h-11"
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              size="small"
+              label="City"
               value={form.city}
-              onChange={(e) =>
-                setForm({ ...form, city: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, city: e.target.value })}
+              sx={inputStyle}
             />
-          </div>
+          </Grid>
 
-          {/* Date */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold flex gap-2">
-              <Calendar className="w-4 h-4" /> Date & Time
-            </label>
-            <Input
+          {/* Date & Time */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Date & Time *"
               type="datetime-local"
-              className="h-11"
               value={form.matchDate}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  matchDate: e.target.value,
-                })
-              }
+              onChange={(e) => setForm({ ...form, matchDate: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+              InputProps={{
+                startAdornment: <Calendar size={16} style={{ color: '#94a3b8', marginRight: 8 }} />
+              }}
+              sx={inputStyle}
             />
-          </div>
+          </Grid>
 
           {/* Series */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold flex gap-2">
-              <Trophy className="w-4 h-4" /> Series
-            </label>
-            <Input
-              className="h-11"
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Series"
               value={form.series}
-              onChange={(e) =>
-                setForm({ ...form, series: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, series: e.target.value })}
+              InputProps={{
+                startAdornment: <Trophy size={16} style={{ color: '#94a3b8', marginRight: 8 }} />
+              }}
+              sx={inputStyle}
             />
-          </div>
+          </Grid>
+
+          {/* Toss Section */}
+          <Grid item xs={12}>
+            <Typography sx={{ 
+              fontSize: '0.75rem', 
+              fontWeight: 700, 
+              color: '#64748b',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              mb: 2,
+              mt: 1
+            }}>
+              Toss Details (Optional)
+            </Typography>
+          </Grid>
 
           {/* Toss Winner */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold">
-              Toss Winner (Optional)
-            </label>
-            <Select
-              value={form.tossWinnerId || 'none'}
-              onValueChange={(v) =>
-                setForm({
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth size="small" disabled={!form.team1Id || !form.team2Id}>
+              <InputLabel>Toss Winner</InputLabel>
+              <Select
+                value={form.tossWinnerId || ''}
+                onChange={(e) => setForm({
                   ...form,
-                  tossWinnerId: v === 'none' ? '' : v,
+                  tossWinnerId: e.target.value,
                   tossDecision: '',
-                })
-              }
-              disabled={!form.team1Id || !form.team2Id}
-            >
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder="Select toss winner" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
+                })}
+                label="Toss Winner"
+                sx={selectStyle}
+              >
+                <MenuItem value="">None</MenuItem>
                 {teams
-                  .filter(
-                    (t) =>
-                      String(t.id) === form.team1Id ||
-                      String(t.id) === form.team2Id
-                  )
+                  .filter((t) => String(t.id) === form.team1Id || String(t.id) === form.team2Id)
                   .map((t) => (
-                    <SelectItem
-                      key={t.id}
-                      value={String(t.id)}
-                    >
+                    <MenuItem key={t.id} value={String(t.id)}>
                       {t.name}
-                    </SelectItem>
+                    </MenuItem>
                   ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </Select>
+            </FormControl>
+          </Grid>
 
           {/* Toss Decision */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold">
-              Toss Decision (Optional)
-            </label>
-            <Select
-              value={form.tossDecision || 'none'}
-              onValueChange={(v) =>
-                setForm({
-                  ...form,
-                  tossDecision: v === 'none' ? '' : v,
-                })
-              }
-              disabled={!form.tossWinnerId}
-            >
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder="Select decision" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                <SelectItem value="bat">Bat</SelectItem>
-                <SelectItem value="bowl">Bowl</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* ---------------- FOOTER ---------------- */}
-        <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="cursor-pointer"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={
-              submitting ||
-              !form.team1Id ||
-              !form.team2Id ||
-              !form.venue ||
-              !form.matchDate
-            }
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white cursor-pointer"
-          >
-            {submitting
-              ? 'Saving...'
-              : editMode
-              ? 'Update Match'
-              : 'Create Match'}
-          </Button>
-        </DialogFooter>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth size="small" disabled={!form.tossWinnerId}>
+              <InputLabel>Toss Decision</InputLabel>
+              <Select
+                value={form.tossDecision || ''}
+                onChange={(e) => setForm({ ...form, tossDecision: e.target.value })}
+                label="Toss Decision"
+                sx={selectStyle}
+              >
+                <MenuItem value="">None</MenuItem>
+                <MenuItem value="bat">Bat</MenuItem>
+                <MenuItem value="bowl">Bowl</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
       </DialogContent>
+
+      {/* Actions */}
+      <DialogActions sx={{ 
+        p: 3, 
+        borderTop: '1px solid #e2e8f0',
+        gap: 1.5
+      }}>
+        <Button 
+          onClick={onClose}
+          sx={{
+            px: 3,
+            py: 1.25,
+            borderRadius: '10px',
+            fontWeight: 600,
+            textTransform: 'none',
+            color: '#64748b',
+            border: '1px solid #e2e8f0',
+            '&:hover': {
+              bgcolor: '#f8fafc',
+              borderColor: '#cbd5e1'
+            }
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          disabled={submitting || !form.team1Id || !form.team2Id || !form.venue || !form.matchDate}
+          sx={{
+            px: 3,
+            py: 1.25,
+            borderRadius: '10px',
+            fontWeight: 600,
+            textTransform: 'none',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
+            color: 'white',
+            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+            },
+            '&.Mui-disabled': {
+              background: '#e2e8f0',
+              color: '#94a3b8'
+            }
+          }}
+        >
+          {submitting ? 'Saving...' : editMode ? 'Update Match' : 'Create Match'}
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 };

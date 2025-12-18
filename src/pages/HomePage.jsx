@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Box, Container, Typography } from "@mui/material";
 import { matchService } from "../api/services";
 import { getSocket } from "../utils/socket";
 import CricketLoader from "../components/CricketLoader";
@@ -93,13 +94,13 @@ const HomePage = () => {
 
   if (error) {
     return (
-      <div className="p-6 text-center">
-        <p className="text-lg text-destructive font-semibold">
+      <Container maxWidth="lg" sx={{ py: 6, textAlign: 'center' }}>
+        <Typography color="error" variant="h6" fontWeight={600}>
           {typeof error === "string"
             ? error
             : error?.message || "An error occurred"}
-        </p>
-      </div>
+        </Typography>
+      </Container>
     );
   }
 
@@ -107,14 +108,83 @@ const HomePage = () => {
   const featuredMatch = upcomingMatches[0];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 via-indigo-50/20 to-slate-50 relative overflow-hidden">
+    <Box
+      sx={{
+        minHeight: '100vh',
+        position: 'relative',
+        overflow: 'hidden',
+        bgcolor: 'background.default',
+      }}
+    >
       {/* Animated background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
+      <Box
+        sx={{
+          position: 'fixed',
+          inset: 0,
+          overflow: 'hidden',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      >
+        {/* Grid pattern overlay */}
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0)`,
+            backgroundSize: '40px 40px',
+          }}
+        />
+        {/* Top right glow */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: -200,
+            right: -200,
+            width: 500,
+            height: 500,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%)',
+            filter: 'blur(60px)',
+            animation: 'pulse 4s ease-in-out infinite',
+          }}
+        />
+        {/* Bottom left glow */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: -160,
+            right: -160,
+            width: 320,
+            height: 320,
+            borderRadius: '50%',
+            background: (theme) => 
+              theme.palette.mode === 'dark' 
+                ? 'rgba(99, 102, 241, 0.15)' 
+                : 'rgba(99, 102, 241, 0.2)',
+            filter: 'blur(48px)',
+            animation: 'pulse 3s ease-in-out infinite',
+          }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: -160,
+            left: -160,
+            width: 320,
+            height: 320,
+            borderRadius: '50%',
+            background: (theme) => 
+              theme.palette.mode === 'dark' 
+                ? 'rgba(236, 72, 153, 0.15)' 
+                : 'rgba(236, 72, 153, 0.2)',
+            filter: 'blur(48px)',
+            animation: 'pulse 3s ease-in-out infinite 1s',
+          }}
+        />
+      </Box>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
+      <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 }, py: 4, position: 'relative', zIndex: 1 }}>
         {/* Featured Match Countdown Hero */}
         {featuredMatch ? (
           <FeaturedMatchCountdown match={featuredMatch} countdown={countdown} />
@@ -130,8 +200,8 @@ const HomePage = () => {
 
         {/* Completed Matches */}
         <CompletedMatchesSection matches={completedMatches} />
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
 };
 

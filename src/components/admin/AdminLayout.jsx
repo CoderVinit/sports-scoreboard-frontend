@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Box, Typography, Container } from '@mui/material';
 import { BarChart3, Trophy, Users, User } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const adminNavItems = [
   { label: 'Overview', path: '/admin', icon: BarChart3 },
@@ -19,79 +19,119 @@ const AdminLayout = ({ title, subtitle, children }) => {
     currentTab = adminNavItems.findIndex(item => location.pathname.startsWith(item.path));
   }
 
-  const handleChange = (value) => {
-    const item = adminNavItems.find(item => item.label === value);
-    if (item && location.pathname !== item.path) {
-      navigate(item.path);
+  const handleTabClick = (path) => {
+    if (location.pathname !== path) {
+      navigate(path);
     }
   };
 
-  const getCurrentTabValue = () => {
-    if (currentTab === -1) return 'Overview';
-    return adminNavItems[currentTab].label;
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Header Section with Gradient */}
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl shadow-xl p-8 mb-6 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mt-32 -mr-32"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -mb-24 -ml-24"></div>
-            <div className="relative z-10">
-              <h1 className="text-4xl md:text-5xl font-bold mb-2 tracking-tight">
-                {title}
-              </h1>
-              {subtitle && (
-                <p className="text-blue-100 text-lg md:text-xl max-w-2xl">
-                  {subtitle}
-                </p>
-              )}
-            </div>
-          </div>
+    <Box sx={{ 
+      minHeight: '100vh', 
+      bgcolor: '#f8fafc',
+      pb: 4
+    }}>
+      {/* Header Section */}
+      <Box sx={{ 
+        background: 'linear-gradient(135deg, #0c1929 0%, #1e3a5f 100%)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Background Pattern */}
+        <Box sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          opacity: 0.1,
+          backgroundImage: `radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
+                           radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.3) 0%, transparent 40%)`,
+          pointerEvents: 'none'
+        }} />
+        
+        <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
+          {/* Title Section */}
+          <Box sx={{ pt: 4, pb: 3 }}>
+            <Typography sx={{ 
+              fontSize: { xs: '1.75rem', md: '2.25rem' },
+              fontWeight: 800,
+              color: 'white',
+              letterSpacing: '-0.02em',
+              mb: 0.5
+            }}>
+              {title}
+            </Typography>
+            {subtitle && (
+              <Typography sx={{ 
+                color: 'rgba(148, 163, 184, 0.9)',
+                fontSize: '0.95rem',
+                fontWeight: 400
+              }}>
+                {subtitle}
+              </Typography>
+            )}
+          </Box>
 
-          {/* Premium Tabs with Icons */}
-          <Tabs value={getCurrentTabValue()} onValueChange={handleChange} className="mb-8">
-            <TabsList className="grid w-full grid-cols-4 bg-white shadow-lg rounded-xl p-1.5 border border-gray-200 h-auto min-h-[56px]">
-              {adminNavItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = getCurrentTabValue() === item.label;
-                return (
-                  <TabsTrigger 
-                    key={item.path} 
-                    value={item.label}
-                    onClick={() => {
-                      if (location.pathname !== item.path) {
-                        navigate(item.path);
-                      }
-                    }}
-                    className={`
-                      relative flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all duration-300 font-semibold text-sm min-h-[48px] w-full cursor-pointer
-                      ${isActive 
-                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
-                        : 'text-gray-700 bg-transparent hover:text-blue-600 hover:bg-gray-50'
-                      }
-                    `}
-                  >
-                    <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-white' : 'text-gray-500'}`} />
-                    <span className="whitespace-nowrap">{item.label}</span>
-                    {isActive && (
-                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/2 h-0.5 bg-white rounded-full"></div>
-                    )}
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
-          </Tabs>
-        </div>
+          {/* Navigation Tabs */}
+          <Box sx={{ 
+            display: 'flex',
+            gap: 0.5,
+            pb: 0,
+            borderBottom: '1px solid rgba(255,255,255,0.1)'
+          }}>
+            {adminNavItems.map((item, index) => {
+              const Icon = item.icon;
+              const isActive = currentTab === index;
+              
+              return (
+                <Box
+                  key={item.path}
+                  onClick={() => handleTabClick(item.path)}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    px: { xs: 2, md: 3 },
+                    py: 1.5,
+                    cursor: 'pointer',
+                    borderBottom: '3px solid',
+                    borderColor: isActive ? '#3b82f6' : 'transparent',
+                    bgcolor: isActive ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                    borderRadius: '8px 8px 0 0',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      bgcolor: 'rgba(59, 130, 246, 0.08)',
+                    }
+                  }}
+                >
+                  <Icon 
+                    size={18} 
+                    style={{ 
+                      color: isActive ? '#60a5fa' : 'rgba(148, 163, 184, 0.7)',
+                      transition: 'color 0.2s'
+                    }} 
+                  />
+                  <Typography sx={{ 
+                    fontSize: '0.85rem',
+                    fontWeight: isActive ? 600 : 500,
+                    color: isActive ? 'white' : 'rgba(148, 163, 184, 0.9)',
+                    display: { xs: 'none', sm: 'block' }
+                  }}>
+                    {item.label}
+                  </Typography>
+                </Box>
+              );
+            })}
+          </Box>
+        </Container>
+      </Box>
 
-        {/* Content */}
-        <div className="relative z-10">
-          {children}
-        </div>
-      </div>
-    </div>
+      {/* Content Area */}
+      <Container maxWidth="xl" sx={{ mt: 3, overflow: 'auto', maxHeight: 'calc(100vh - 180px)' }}>
+        {children}
+      </Container>
+    </Box>
   );
 };
 
